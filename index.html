@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Notepad — Tulis & Bagikan</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0e0e0e;
-    --surface: #161616;
-    --border: #2a2a2a;
-    --accent: #e8d5a3;
-    --accent2: #c4a882;
-    --text: #f0ebe0;
-    --muted: #666;
+    --bg: #f5f0e8;
+    --surface: #fffdf8;
+    --border: #d8cfc0;
+    --accent: #7a5c3a;
+    --accent2: #9b7450;
+    --text: #2a2018;
+    --muted: #9a8f82;
     --danger: #c0392b;
-    --green: #27ae60;
+    --green: #2e7d52;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -44,8 +44,8 @@
     transition: all 0.2s; border-radius: 3px; text-transform: uppercase;
   }
   .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-primary { background: var(--accent); border-color: var(--accent); color: #0e0e0e; font-weight: 500; }
-  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #0e0e0e; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fffdf8; font-weight: 500; }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fffdf8; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   main {
     flex: 1; display: flex; flex-direction: column;
@@ -71,7 +71,7 @@
     width: 100%; padding: 0.4rem 0 0.6rem; outline: none;
     transition: border-color 0.2s; letter-spacing: -0.02em;
   }
-  #title-input::placeholder { color: #333; }
+  #title-input::placeholder { color: #c0b8ac; }
   #title-input:focus { border-color: var(--accent); }
 
   #editor {
@@ -80,7 +80,7 @@
     width: 100%; min-height: 60vh; padding: 1.5rem; outline: none;
     resize: none; border-radius: 4px; transition: border-color 0.2s; tab-size: 2;
   }
-  #editor::placeholder { color: #2e2e2e; }
+  #editor::placeholder { color: #c8c0b4; }
   #editor:focus { border-color: var(--accent); }
 
   .footer-bar {
@@ -95,6 +95,154 @@
     font-family: 'JetBrains Mono', monospace;
   }
   .tool-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── READ MODE ────────────────────────────────────────────────── */
+  body.read-mode main {
+    max-width: 720px;
+    padding: 3rem 2rem 6rem;
+    gap: 0;
+  }
+
+  .read-header {
+    display: none;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 2.4rem;
+    padding-bottom: 1.6rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.5s ease both;
+  }
+  body.read-mode .read-header { display: flex; }
+
+  .read-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    color: var(--text);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .read-meta {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Rendered markdown content */
+  #read-content {
+    display: none;
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: #3d3028;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  body.read-mode #read-content { display: block; }
+
+  #read-content p {
+    margin-bottom: 1.3em;
+  }
+  #read-content h1, #read-content h2, #read-content h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--accent);
+    margin: 2em 0 0.6em;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  #read-content h1 { font-size: 1.7rem; }
+  #read-content h2 { font-size: 1.35rem; }
+  #read-content h3 { font-size: 1.1rem; }
+  #read-content strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  #read-content em {
+    font-style: italic;
+    color: var(--accent2);
+  }
+  #read-content code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: #ede8e0;
+    border: 1px solid var(--border);
+    padding: 0.15em 0.45em;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+  #read-content pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    padding: 1.2rem 1.4rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 1.5em 0;
+  }
+  #read-content pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  #read-content blockquote {
+    border-left: 3px solid var(--accent2);
+    padding: 0.5rem 0 0.5rem 1.3rem;
+    margin: 1.5em 0;
+    color: var(--muted);
+    font-style: italic;
+  }
+  #read-content hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5em 0;
+  }
+  #read-content ul, #read-content ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.3em;
+  }
+  #read-content li {
+    margin-bottom: 0.4em;
+  }
+  #read-content a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity: 0.85;
+  }
+  #read-content a:hover { opacity: 1; }
+
+  /* Read mode — hide editor elements */
+  body.read-mode #edit-view { display: none; }
+  body.read-mode .read-actions { display: flex !important; }
+
+  .read-actions {
+    display: none;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  /* Read mode bottom bar */
+  .read-footer {
+    display: none;
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.68rem;
+    color: var(--muted);
+    justify-content: space-between;
+    align-items: center;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  body.read-mode .read-footer { display: flex; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
   /* Share Panel */
   .share-panel {
@@ -139,7 +287,7 @@
   .toast {
     position: fixed; bottom: 2rem; left: 50%;
     transform: translateX(-50%) translateY(10px);
-    background: var(--accent); color: #0e0e0e;
+    background: var(--accent); color: #fffdf8;
     font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500;
     padding: 0.6rem 1.2rem; border-radius: 3px; opacity: 0; transition: all 0.3s;
     pointer-events: none; z-index: 600; letter-spacing: 0.05em; white-space: nowrap;
@@ -153,6 +301,8 @@
     #title-input { font-size: 1.5rem; }
     .brand-name { font-size: 1.1rem; }
     .actions .btn { padding: 0.4rem 0.6rem; font-size: 0.62rem; }
+    body.read-mode main { padding: 1.5rem 1.2rem 4rem; }
+    .read-title { font-size: 1.6rem; }
   }
 </style>
 </head>
@@ -161,43 +311,63 @@
 <header>
   <div class="brand">
     <span class="brand-name">Notepad</span>
-    <span class="brand-tag">online · firebase</span>
+    <span class="brand-tag" id="header-tag">online · firebase</span>
   </div>
-  <div class="actions">
+  <!-- Edit mode actions -->
+  <div class="actions" id="edit-actions">
     <button class="btn" onclick="newNote()">＋ Baru</button>
     <button class="btn" onclick="downloadNote()">Unduh</button>
     <button class="btn btn-primary" onclick="openShare()">↗ Bagikan</button>
   </div>
+  <!-- Read mode actions -->
+  <div class="read-actions" id="read-actions">
+    <button class="btn" onclick="downloadNote()">↓ Unduh</button>
+    <button class="btn btn-primary" onclick="openEditMode()">✎ Edit / Salin</button>
+  </div>
 </header>
 
 <main>
-  <input id="title-input" type="text" placeholder="Judul catatan..." autocomplete="off" spellcheck="false">
+  <!-- READ MODE VIEW -->
+  <div class="read-header" id="read-header">
+    <div class="read-title" id="read-title"></div>
+    <div class="read-meta" id="read-meta">Memuat...</div>
+  </div>
+  <div id="read-content"></div>
+  <div class="read-footer" id="read-footer">
+    <span id="read-word-count">—</span>
+    <span id="read-date">—</span>
+  </div>
 
-  <div class="meta-bar">
-    <div>
-      <span class="status-dot" id="status-dot"></span>
-      <span id="status-text">Memuat Firebase...</span>
+  <!-- EDIT MODE VIEW -->
+  <div id="edit-view">
+    <input id="title-input" type="text" placeholder="Judul catatan..." autocomplete="off" spellcheck="false">
+
+    <div class="meta-bar">
+      <div>
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Memuat Firebase...</span>
+      </div>
+      <div id="word-count">0 kata · 0 karakter</div>
     </div>
-    <div id="word-count">0 kata · 0 karakter</div>
-  </div>
 
-  <div class="toolbar">
-    <button class="tool-btn" onclick="insertText('**','**')" title="Bold"><b>B</b></button>
-    <button class="tool-btn" onclick="insertText('_','_')"   title="Italic" style="font-style:italic">I</button>
-    <button class="tool-btn" onclick="insertText('\`','\`')" title="Code" style="font-size:0.6rem">&lt;/&gt;</button>
-    <button class="tool-btn" onclick="insertLine('- ')"      title="List">—</button>
-    <button class="tool-btn" onclick="insertLine('> ')"      title="Quote">❝</button>
-    <button class="tool-btn" onclick="insertLine('# ')"      title="Heading">H</button>
-    <button class="tool-btn" onclick="insertSep()"           title="Separator">···</button>
-  </div>
+    <div class="toolbar">
+      <button class="tool-btn" onclick="insertText('**','**')" title="Bold"><b>B</b></button>
+      <button class="tool-btn" onclick="insertText('_','_')"   title="Italic" style="font-style:italic">I</button>
+      <button class="tool-btn" onclick="insertText('\`','\`')" title="Code" style="font-size:0.6rem">&lt;/&gt;</button>
+      <button class="tool-btn" onclick="insertLine('- ')"      title="List">—</button>
+      <button class="tool-btn" onclick="insertLine('> ')"      title="Quote">❝</button>
+      <button class="tool-btn" onclick="insertLine('# ')"      title="Heading">H</button>
+      <button class="tool-btn" onclick="insertSep()"           title="Separator">···</button>
+    </div>
 
-  <textarea id="editor"
-    placeholder="Tulis catatanmu di sini...&#10;&#10;Catatan otomatis tersimpan ke Firebase Firestore.&#10;Klik '↗ Bagikan' untuk dapat link pendek yang bisa langsung dibuka."
-    spellcheck="false"></textarea>
+    <textarea id="editor"
+      placeholder="Tulis catatanmu di sini...&#10;&#10;Catatan otomatis tersimpan ke Firebase Firestore.&#10;Klik '↗ Bagikan' untuk dapat link pendek yang bisa langsung dibuka."
+      spellcheck="false"></textarea>
 
-  <div class="footer-bar">
-    <span id="note-id-bar">Catatan baru</span>
-    <span id="last-saved">—</span>
+    <div class="footer-bar">
+      <span id="note-id-bar">Catatan baru</span>
+      <span id="last-saved">—</span>
+    </div>
   </div>
 </main>
 
@@ -205,13 +375,13 @@
 <div class="share-panel" id="share-panel" onclick="closeShareOutside(event)">
   <div class="share-box">
     <h2>Bagikan Catatan</h2>
-    <p>Link ini bisa dibuka siapapun dari device manapun. Catatan tersimpan di Firebase — URL pendek dan bersih.</p>
+    <p>Link ini bisa dibuka siapapun dari device manapun. Penerima akan melihat tampilan baca yang bersih — tanpa editor, tanpa gangguan.</p>
     <div class="url-row">
       <div class="url-display" id="share-url">—</div>
       <button class="btn btn-primary" onclick="copyUrl()">Salin</button>
     </div>
     <div class="share-hint">
-      ✓ Disimpan di Firebase Firestore &nbsp;·&nbsp; URL pendek &nbsp;·&nbsp; Realtime sync
+      ✓ Tersimpan di Firebase Firestore &nbsp;·&nbsp; Tampilan baca otomatis &nbsp;·&nbsp; Bisa diunduh
     </div>
     <div style="margin-top:1rem;display:flex;justify-content:flex-end;">
       <button class="btn" onclick="closeShare()">Tutup</button>
@@ -258,9 +428,158 @@
   const loadingLbl  = document.getElementById('loading-label');
 
   // ── State ────────────────────────────────────────────────────
-  let currentId = null;
-  let saveTimer = null;
-  let isSaving  = false;
+  let currentId   = null;
+  let saveTimer   = null;
+  let isSaving    = false;
+  let isReadMode  = false;
+  let cachedTitle = '';
+  let cachedBody  = '';
+
+  // ── Simple Markdown renderer ─────────────────────────────────
+  function renderMarkdown(text) {
+    // Escape HTML first
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    let html = '';
+    const lines = text.split('\n');
+    let inCode = false, codeBuffer = [], inBlockquote = false, bqBuffer = [];
+    let listBuffer = [], inList = false;
+
+    function flushList() {
+      if (!listBuffer.length) return;
+      html += '<ul>' + listBuffer.map(l => `<li>${inlineRender(l)}</li>`).join('') + '</ul>';
+      listBuffer = []; inList = false;
+    }
+    function flushBq() {
+      if (!bqBuffer.length) return;
+      html += '<blockquote>' + bqBuffer.map(l => `<p>${inlineRender(l)}</p>`).join('') + '</blockquote>';
+      bqBuffer = []; inBlockquote = false;
+    }
+
+    function inlineRender(s) {
+      return esc(s)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/_(.+?)_/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code>$1</code>')
+        .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Fenced code block
+      if (line.startsWith('```')) {
+        if (inCode) {
+          html += '<pre><code>' + codeBuffer.map(esc).join('\n') + '</code></pre>';
+          codeBuffer = []; inCode = false;
+        } else {
+          flushList(); flushBq();
+          inCode = true;
+        }
+        continue;
+      }
+      if (inCode) { codeBuffer.push(line); continue; }
+
+      // HR
+      if (/^---+$/.test(line.trim())) {
+        flushList(); flushBq();
+        html += '<hr>'; continue;
+      }
+
+      // Headings
+      const hm = line.match(/^(#{1,3})\s+(.+)/);
+      if (hm) {
+        flushList(); flushBq();
+        const lvl = hm[1].length;
+        html += `<h${lvl}>${inlineRender(hm[2])}</h${lvl}>`;
+        continue;
+      }
+
+      // Blockquote
+      if (line.startsWith('> ')) {
+        flushList();
+        inBlockquote = true;
+        bqBuffer.push(line.slice(2));
+        continue;
+      } else if (inBlockquote) {
+        flushBq();
+      }
+
+      // List
+      if (/^[-*]\s+/.test(line)) {
+        inList = true;
+        listBuffer.push(line.replace(/^[-*]\s+/, ''));
+        continue;
+      } else if (inList) {
+        flushList();
+      }
+
+      // Empty line
+      if (!line.trim()) {
+        flushList(); flushBq();
+        continue;
+      }
+
+      // Paragraph
+      html += `<p>${inlineRender(line)}</p>`;
+    }
+
+    flushList(); flushBq();
+    if (inCode && codeBuffer.length) {
+      html += '<pre><code>' + codeBuffer.map(esc).join('\n') + '</code></pre>';
+    }
+
+    return html;
+  }
+
+  // ── Activate Read Mode ───────────────────────────────────────
+  function activateReadMode(data, id) {
+    isReadMode = true;
+    cachedTitle = data.title || '';
+    cachedBody  = data.body  || '';
+
+    document.body.classList.add('read-mode');
+    document.getElementById('edit-actions').style.display = 'none';
+    document.getElementById('read-actions').style.display = 'flex';
+    document.getElementById('header-tag').textContent = 'baca · firebase';
+    document.title = (data.title || 'Catatan') + ' — Notepad';
+
+    // Populate read view
+    document.getElementById('read-title').textContent = data.title || '(Tanpa Judul)';
+    document.getElementById('read-content').innerHTML = renderMarkdown(data.body || '');
+
+    // Meta
+    const words = (data.body || '').trim().split(/\s+/).filter(Boolean).length;
+    const chars = (data.body || '').length;
+    document.getElementById('read-word-count').textContent = `${words} kata · ${chars} karakter`;
+
+    if (data.updatedAt) {
+      const d = data.updatedAt.toDate();
+      document.getElementById('read-meta').textContent =
+        'Diperbarui ' + d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('read-date').textContent =
+        d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    } else {
+      document.getElementById('read-meta').textContent = 'Tersimpan di Firebase';
+    }
+
+    // Still populate editor in background (for edit/download)
+    currentId        = id;
+    titleInput.value = data.title || '';
+    editor.value     = data.body  || '';
+    noteIdBar.textContent = 'ID: ' + id;
+  }
+
+  // ── Switch to Edit Mode ──────────────────────────────────────
+  window.openEditMode = function() {
+    document.body.classList.remove('read-mode');
+    document.getElementById('edit-actions').style.display = '';
+    document.getElementById('read-actions').style.display = 'none';
+    document.getElementById('header-tag').textContent = 'online · firebase';
+    document.title = 'Notepad — Tulis & Bagikan';
+    titleInput.focus();
+    setStatus('saved', 'Dimuat dari Firebase ✓');
+  };
 
   // ── Helpers ──────────────────────────────────────────────────
   function genId() {
@@ -306,11 +625,9 @@
 
     try {
       if (!currentId) {
-        // Buat dokumen baru dengan ID acak
         currentId = genId();
         await setDoc(doc(db, 'notes', currentId), {
-          title,
-          body,
+          title, body,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
@@ -318,8 +635,7 @@
         history.replaceState(null, '', window.location.pathname + '?id=' + currentId);
       } else {
         await updateDoc(doc(db, 'notes', currentId), {
-          title,
-          body,
+          title, body,
           updatedAt: serverTimestamp()
         });
       }
@@ -335,32 +651,37 @@
     }
   }
 
-  async function loadNote(id) {
+  async function loadNote(id, readOnly) {
     showLoading('Memuat catatan...');
-    setStatus('loading', 'Memuat...');
+    if (!readOnly) setStatus('loading', 'Memuat...');
     try {
       const snap = await getDoc(doc(db, 'notes', id));
       if (!snap.exists()) {
         showToast('Catatan tidak ditemukan.', true);
-        setStatus('error', 'Tidak ditemukan');
+        if (!readOnly) setStatus('error', 'Tidak ditemukan');
+        hideLoading();
         return;
       }
       const data = snap.data();
-      currentId         = id;
-      titleInput.value  = data.title || '';
-      editor.value      = data.body  || '';
-      noteIdBar.textContent = 'ID: ' + id;
-      updateWordCount();
 
-      if (data.updatedAt) {
-        const d = data.updatedAt.toDate();
-        lastSavedEl.textContent = 'Diperbarui ' + d.toLocaleDateString('id-ID');
+      if (readOnly) {
+        activateReadMode(data, id);
+      } else {
+        currentId         = id;
+        titleInput.value  = data.title || '';
+        editor.value      = data.body  || '';
+        noteIdBar.textContent = 'ID: ' + id;
+        updateWordCount();
+        if (data.updatedAt) {
+          const d = data.updatedAt.toDate();
+          lastSavedEl.textContent = 'Diperbarui ' + d.toLocaleDateString('id-ID');
+        }
+        setStatus('saved', 'Dimuat dari Firebase ✓');
+        showToast('Catatan berhasil dimuat!');
       }
-      setStatus('saved', 'Dimuat dari Firebase ✓');
-      showToast('Catatan berhasil dimuat!');
     } catch (e) {
       console.error(e);
-      setStatus('error', 'Gagal memuat');
+      if (!readOnly) setStatus('error', 'Gagal memuat');
       showToast('Gagal memuat: ' + e.message, true);
     } finally {
       hideLoading();
@@ -454,8 +775,8 @@
 
   // ── Download ─────────────────────────────────────────────────
   window.downloadNote = function() {
-    const title   = titleInput.value || 'catatan';
-    const content = (titleInput.value ? `# ${titleInput.value}\n\n` : '') + editor.value;
+    const title   = titleInput.value || cachedTitle || 'catatan';
+    const content = (titleInput.value || cachedTitle ? `# ${titleInput.value || cachedTitle}\n\n` : '') + (editor.value || cachedBody);
     const blob    = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const a       = document.createElement('a');
     a.href        = URL.createObjectURL(blob);
@@ -465,10 +786,13 @@
   };
 
   // ── Init ─────────────────────────────────────────────────────
-  const params = new URLSearchParams(window.location.search);
+  const params  = new URLSearchParams(window.location.search);
   const idParam = params.get('id');
+  // read=1 memaksa mode edit meski ada ?id (untuk keperluan internal)
+  const forceEdit = params.get('edit') === '1';
+
   if (idParam) {
-    loadNote(idParam);
+    loadNote(idParam, !forceEdit); // read mode = true kecuali ada ?edit=1
   } else {
     setStatus('', 'Siap');
   }
