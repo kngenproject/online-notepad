@@ -31,15 +31,19 @@
     --green: #2d6a4f;
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    --fab-height: 64px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
 
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
@@ -51,8 +55,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.5rem;
-    height: 56px;
+    padding: 0 1rem;
+    height: 52px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
     position: sticky;
@@ -68,16 +72,16 @@
   }
 
   .brand-icon {
-    width: 28px; height: 28px;
+    width: 30px; height: 30px;
     background: var(--accent);
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; color: white; flex-shrink: 0;
+    font-size: 0.8rem; color: white; flex-shrink: 0;
   }
 
   .brand-name {
     font-family: 'DM Serif Display', serif;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     color: var(--text);
     letter-spacing: -0.01em;
   }
@@ -95,9 +99,10 @@
     .brand-tag { display: inline; }
   }
 
+  /* Header actions: desktop shows all, mobile collapses to icons */
   .actions {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.3rem;
     align-items: center;
   }
 
@@ -107,7 +112,7 @@
     border: 1px solid var(--border2);
     color: var(--text2);
     padding: 0 0.85rem;
-    height: 34px;
+    height: 36px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.78rem;
     font-weight: 500;
@@ -119,13 +124,12 @@
     align-items: center;
     gap: 0.3rem;
     white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
-  .btn:hover {
-    background: var(--surface2);
-    border-color: var(--border2);
-    color: var(--text);
-  }
+  .btn:hover  { background: var(--surface2); border-color: var(--border2); color: var(--text); }
+  .btn:active { opacity: 0.75; transform: scale(0.97); }
 
   .btn-primary {
     background: var(--accent);
@@ -134,32 +138,27 @@
     font-weight: 600;
   }
 
-  .btn-primary:hover {
-    background: var(--accent2);
-    border-color: var(--accent2);
-    color: #fff;
-  }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
 
-  .btn-ghost {
-    border-color: transparent;
-    color: var(--muted);
-  }
-
-  .btn-ghost:hover {
-    background: var(--surface2);
-    color: var(--text2);
-    border-color: var(--border);
-  }
+  .btn-ghost { border-color: transparent; color: var(--muted); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text2); border-color: var(--border); }
 
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* icon-only button */
   .btn-icon {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 1rem;
+  }
+
+  /* On mobile, hide text labels in header, show only icon buttons */
+  @media (max-width: 479px) {
+    .btn-label { display: none; }
+    /* Increase tap target */
+    .btn-icon { width: 40px; height: 40px; font-size: 1.05rem; }
+    .btn-primary.has-icon { padding: 0 0.65rem; }
   }
 
   /* ── MAIN LAYOUT ──────────────────────────────────────────── */
@@ -170,7 +169,7 @@
     max-width: 740px;
     width: 100%;
     margin: 0 auto;
-    padding: 1.5rem 1rem 5rem;
+    padding: 1.2rem 1rem calc(var(--fab-height) + 1.5rem + env(safe-area-inset-bottom, 0px));
     gap: 0.75rem;
   }
 
@@ -197,7 +196,7 @@
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 20px;
-    padding: 0.2rem 0.65rem;
+    padding: 0.22rem 0.7rem;
     font-size: 0.66rem;
     font-weight: 500;
     color: var(--text2);
@@ -215,10 +214,7 @@
   .status-dot.saved  { background: var(--green); }
   .status-dot.dirty  { background: #f39c12; }
   .status-dot.error  { background: var(--danger); }
-  .status-dot.loading {
-    background: var(--accent);
-    animation: pulse 1s infinite;
-  }
+  .status-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
 
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
@@ -228,13 +224,15 @@
     border: none;
     color: var(--text);
     font-family: 'DM Serif Display', serif;
-    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    font-size: clamp(1.5rem, 6vw, 2.2rem);
     width: 100%;
-    padding: 0.5rem 0 0.3rem;
+    padding: 0.5rem 0 0.25rem;
     outline: none;
     letter-spacing: -0.02em;
     line-height: 1.25;
     caret-color: var(--accent);
+    /* Prevent iOS zoom on focus */
+    font-size: max(16px, clamp(1.5rem, 6vw, 2.2rem));
   }
 
   #title-input::placeholder { color: #ccc9c4; }
@@ -243,18 +241,22 @@
   .editor-divider {
     height: 1px;
     background: var(--border);
-    margin: 0.25rem 0;
+    margin: 0.2rem 0;
   }
 
   /* ── TOOLBAR ──────────────────────────────────────────────── */
   .toolbar {
     display: flex;
-    gap: 0.2rem;
+    gap: 0.15rem;
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding: 0.1rem 0;
+    padding: 0.15rem 0;
+    /* Ensure toolbar is reachable on mobile */
+    margin: 0 -0.25rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
   }
 
   .toolbar::-webkit-scrollbar { display: none; }
@@ -263,30 +265,29 @@
     background: transparent;
     border: 1px solid transparent;
     color: var(--muted);
-    min-width: 32px;
-    height: 32px;
+    min-width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 0.78rem;
-    border-radius: 6px;
+    font-size: 0.82rem;
+    border-radius: 8px;
     transition: all 0.12s;
     font-family: 'DM Sans', sans-serif;
     flex-shrink: 0;
-    padding: 0 0.5rem;
+    padding: 0 0.55rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
-  .tool-btn:hover {
-    background: var(--surface2);
-    border-color: var(--border);
-    color: var(--accent);
-  }
+  .tool-btn:hover  { background: var(--surface2); border-color: var(--border); color: var(--accent); }
+  .tool-btn:active { background: var(--accent-light); color: var(--accent2); transform: scale(0.95); }
 
   .tool-sep {
     width: 1px;
     background: var(--border);
-    margin: 4px 0.2rem;
+    margin: 6px 0.15rem;
     flex-shrink: 0;
   }
 
@@ -296,15 +297,17 @@
     border: none;
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 0.9rem;
-    line-height: 1.9;
+    font-size: 0.92rem;
+    line-height: 1.85;
     width: 100%;
-    min-height: 55vh;
+    min-height: 50vh;
     padding: 0.5rem 0;
     outline: none;
     resize: none;
     tab-size: 2;
     caret-color: var(--accent);
+    /* Prevent iOS zoom */
+    font-size: max(16px, 0.92rem);
   }
 
   #editor::placeholder { color: #d0ccc7; }
@@ -322,10 +325,94 @@
     letter-spacing: 0.02em;
   }
 
+  /* ── MOBILE FAB TOOLBAR (bottom action bar) ───────────────── */
+  .mobile-fab {
+    display: none;
+  }
+
+  @media (max-width: 639px) {
+    /* Show floating bottom bar on mobile */
+    .mobile-fab {
+      display: flex;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: calc(var(--fab-height) + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      z-index: 20;
+      align-items: center;
+      justify-content: space-around;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    }
+
+    .mobile-fab .fab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0.4rem 0.6rem;
+      border-radius: 10px;
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-width: 52px;
+    }
+
+    .mobile-fab .fab-btn .fab-icon {
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .mobile-fab .fab-btn .fab-label {
+      font-size: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .mobile-fab .fab-btn:active { transform: scale(0.92); color: var(--accent); }
+
+    .mobile-fab .fab-btn.fab-primary {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 12px;
+      padding: 0.5rem 0.8rem;
+    }
+
+    .mobile-fab .fab-btn.fab-danger { color: var(--danger); }
+    .mobile-fab .fab-divider {
+      width: 1px; height: 28px;
+      background: var(--border);
+    }
+
+    /* Hide desktop header buttons on mobile edit mode */
+    #edit-actions .btn-hide-mobile { display: none; }
+    /* Show only menu + new in header on mobile */
+    #edit-actions .btn-show-mobile { display: inline-flex; }
+
+    /* Read mode actions stay in header */
+    #read-actions .btn { height: 36px; }
+  }
+
+  @media (min-width: 640px) {
+    .mobile-fab { display: none !important; }
+    #edit-actions .btn-hide-mobile { display: inline-flex; }
+  }
+
   /* ── READ MODE ────────────────────────────────────────────── */
   body.read-mode main {
     max-width: 680px;
-    padding: 2rem 1.2rem 6rem;
+    padding: 1.5rem 1rem 5rem;
     gap: 0;
   }
 
@@ -337,8 +424,8 @@
     display: none;
     flex-direction: column;
     gap: 0.5rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
     border-bottom: 1px solid var(--border);
     animation: fadeUp 0.5s ease both;
   }
@@ -347,7 +434,7 @@
 
   .read-title {
     font-family: 'DM Serif Display', serif;
-    font-size: clamp(1.8rem, 6vw, 2.6rem);
+    font-size: clamp(1.7rem, 6vw, 2.6rem);
     color: var(--text);
     line-height: 1.2;
     letter-spacing: -0.02em;
@@ -398,10 +485,11 @@
     background: var(--surface2);
     border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
-    padding: 1.1rem 1.3rem;
+    padding: 1rem 1.1rem;
     border-radius: 8px;
     overflow-x: auto;
     margin: 1.4em 0;
+    -webkit-overflow-scrolling: touch;
   }
   #read-content pre code {
     background: none; border: none; padding: 0;
@@ -409,19 +497,15 @@
   }
   #read-content blockquote {
     border-left: 3px solid var(--accent);
-    padding: 0.5rem 0 0.5rem 1.2rem;
+    padding: 0.5rem 0 0.5rem 1.1rem;
     margin: 1.4em 0;
     color: var(--muted);
     font-style: italic;
     background: var(--accent-light);
     border-radius: 0 6px 6px 0;
   }
-  #read-content hr {
-    border: none; border-top: 1px solid var(--border); margin: 2.5em 0;
-  }
-  #read-content ul, #read-content ol {
-    padding-left: 1.4rem; margin-bottom: 1.2em;
-  }
+  #read-content hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  #read-content ul, #read-content ol { padding-left: 1.4rem; margin-bottom: 1.2em; }
   #read-content li { margin-bottom: 0.35em; }
   #read-content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
   #read-content a:hover { color: var(--accent2); }
@@ -429,7 +513,7 @@
   body.read-mode #edit-view { display: none; }
   body.read-mode .read-actions { display: flex !important; }
 
-  .read-actions { display: none; gap: 0.5rem; align-items: center; }
+  .read-actions { display: none; gap: 0.4rem; align-items: center; }
 
   .read-footer {
     display: none;
@@ -466,14 +550,14 @@
   .pin-box {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 16px 16px 0 0;
-    padding: 1.8rem 1.5rem 2rem;
+    border-radius: 20px 20px 0 0;
+    padding: 1.6rem 1.3rem calc(1.6rem + env(safe-area-inset-bottom, 0px));
     width: 100%; max-width: 380px;
     transform: translateY(20px);
     transition: transform 0.3s;
     box-shadow: var(--shadow-md);
   }
-  @media (min-width: 480px) { .pin-box { border-radius: 14px; } }
+  @media (min-width: 480px) { .pin-box { border-radius: 14px; padding-bottom: 1.6rem; } }
   .pin-modal.open .pin-box { transform: translateY(0); }
 
   .pin-box-title {
@@ -485,18 +569,18 @@
   .pin-box-sub {
     font-size: 0.73rem;
     color: var(--muted);
-    margin-bottom: 1.4rem;
+    margin-bottom: 1.2rem;
     line-height: 1.55;
   }
 
   .pin-dots {
     display: flex;
     justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 1.6rem;
+    gap: 1rem;
+    margin-bottom: 1.4rem;
   }
   .pin-dot {
-    width: 14px; height: 14px;
+    width: 16px; height: 16px;
     border-radius: 50%;
     border: 2px solid var(--border2);
     background: transparent;
@@ -514,34 +598,36 @@
   .pin-pad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
   .pin-key {
     background: var(--surface2);
     border: 1px solid var(--border);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 500;
-    height: 52px;
-    border-radius: 10px;
+    height: 58px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.12s;
     display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   .pin-key:hover  { background: var(--border); }
-  .pin-key:active { transform: scale(0.95); }
-  .pin-key.del    { font-size: 1.2rem; color: var(--muted); }
+  .pin-key:active { transform: scale(0.93); background: var(--border2); }
+  .pin-key.del    { font-size: 1.3rem; color: var(--muted); }
   .pin-key.confirm {
     background: var(--accent); color: #fff;
-    border-color: var(--accent); font-size: 0.8rem;
+    border-color: var(--accent); font-size: 0.85rem;
     font-weight: 600; letter-spacing: 0.02em;
   }
   .pin-key.confirm:hover { background: var(--accent2); border-color: var(--accent2); }
 
   .pin-error-msg {
     text-align: center;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: var(--danger);
     margin-top: 0.8rem;
     min-height: 1rem;
@@ -560,15 +646,21 @@
     border: none;
     color: var(--muted);
     cursor: pointer;
-    padding: 0.3rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
+    padding: 0.4rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
     flex-shrink: 0;
-    opacity: 0;
+    /* Always visible on touch devices */
+    opacity: 1;
     transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .note-item:hover .note-item-del { opacity: 1; }
+  @media (hover: hover) {
+    .note-item-del { opacity: 0; }
+    .note-item:hover .note-item-del { opacity: 1; }
+  }
   .note-item-del:hover { color: var(--danger); background: #fdecea; }
+  .note-item-del:active { color: var(--danger); background: #fdecea; transform: scale(0.92); }
 
   /* ── SHARE PANEL ──────────────────────────────────────────── */
   .share-panel {
@@ -579,29 +671,21 @@
     transition: opacity 0.25s;
     backdrop-filter: blur(4px);
   }
-
-  @media (min-width: 480px) {
-    .share-panel { align-items: center; }
-  }
-
+  @media (min-width: 480px) { .share-panel { align-items: center; } }
   .share-panel.open { opacity: 1; pointer-events: all; }
 
   .share-box {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 16px 16px 0 0;
-    padding: 1.5rem;
+    border-radius: 20px 20px 0 0;
+    padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
     width: 100%;
     max-width: 460px;
     transform: translateY(20px);
     transition: transform 0.3s;
     box-shadow: var(--shadow-md);
   }
-
-  @media (min-width: 480px) {
-    .share-box { border-radius: 12px; }
-  }
-
+  @media (min-width: 480px) { .share-box { border-radius: 12px; padding-bottom: 1.5rem; } }
   .share-panel.open .share-box { transform: translateY(0); }
   .share-box h2 {
     font-family: 'DM Serif Display', serif;
@@ -609,7 +693,7 @@
     color: var(--text);
     margin-bottom: 0.3rem;
   }
-  .share-box p { font-size: 0.75rem; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.6; }
+  .share-box p { font-size: 0.75rem; color: var(--muted); margin-bottom: 1.1rem; line-height: 1.6; }
   .url-row { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
   .url-display {
     flex: 1;
@@ -618,7 +702,7 @@
     color: var(--accent2);
     font-family: 'DM Mono', monospace;
     font-size: 0.68rem;
-    padding: 0.65rem 0.85rem;
+    padding: 0.7rem 0.85rem;
     border-radius: 8px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -628,7 +712,7 @@
   .share-hint {
     font-size: 0.65rem;
     color: var(--muted);
-    line-height: 1.6;
+    line-height: 1.7;
     border-top: 1px solid var(--border);
     padding-top: 0.85rem;
     margin-top: 0.4rem;
@@ -636,7 +720,8 @@
 
   /* ── NOTES PANEL ──────────────────────────────────────────── */
   .notes-panel {
-    position: fixed; top: 0; left: 0; height: 100vh; width: 290px;
+    position: fixed; top: 0; left: 0; height: 100%;
+    width: min(290px, 85vw);
     background: var(--surface);
     border-right: 1px solid var(--border);
     z-index: 50;
@@ -649,11 +734,12 @@
   .notes-panel.open { transform: translateX(0); }
 
   .notes-panel-header {
-    padding: 1rem 1rem 0.75rem;
+    padding: 1.1rem 1rem 0.85rem;
     border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-top: calc(1.1rem + env(safe-area-inset-top, 0px));
   }
 
   .notes-panel-header h3 {
@@ -670,19 +756,20 @@
   }
 
   .note-item {
-    padding: 0.7rem 0.8rem;
-    border-radius: 8px;
+    padding: 0.8rem 0.9rem;
+    border-radius: 10px;
     cursor: pointer;
     border: 1px solid transparent;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.3rem;
     transition: all 0.12s;
   }
 
-  .note-item:hover { background: var(--surface2); border-color: var(--border); }
+  .note-item:hover  { background: var(--surface2); border-color: var(--border); }
+  .note-item:active { background: var(--accent-light); }
   .note-item.active { background: var(--accent-light); border-color: var(--accent); }
 
   .note-item-title {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 500;
     color: var(--text);
     white-space: nowrap;
@@ -691,7 +778,7 @@
   }
 
   .note-item-date {
-    font-size: 0.62rem;
+    font-size: 0.63rem;
     color: var(--muted);
     margin-top: 0.2rem;
     font-weight: 500;
@@ -699,9 +786,8 @@
 
   .panel-overlay {
     position: fixed; inset: 0; z-index: 49; display: none;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.25);
   }
-
   .panel-overlay.show { display: block; }
 
   /* ── LOADING ──────────────────────────────────────────────── */
@@ -715,12 +801,11 @@
     transition: opacity 0.2s;
     backdrop-filter: blur(2px);
   }
-
   .loading-overlay.show { opacity: 1; pointer-events: all; }
 
   .loading-spinner {
-    width: 30px; height: 30px;
-    border: 2px solid var(--border);
+    width: 32px; height: 32px;
+    border: 2.5px solid var(--border);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
@@ -731,14 +816,16 @@
 
   /* ── TOAST ────────────────────────────────────────────────── */
   .toast {
-    position: fixed; bottom: 1.5rem; left: 50%;
+    position: fixed;
+    bottom: calc(var(--fab-height) + 0.75rem + env(safe-area-inset-bottom, 0px));
+    left: 50%;
     transform: translateX(-50%) translateY(8px);
     background: var(--text);
     color: #fff;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.75rem;
     font-weight: 500;
-    padding: 0.55rem 1.1rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 20px;
     opacity: 0;
     transition: all 0.25s;
@@ -746,14 +833,21 @@
     z-index: 600;
     white-space: nowrap;
     box-shadow: var(--shadow-md);
+    max-width: calc(100vw - 2rem);
+  }
+
+  @media (min-width: 640px) {
+    .toast { bottom: 1.5rem; }
   }
 
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.err { background: var(--danger); }
+  .toast.err  { background: var(--danger); }
 
-  /* ── MOBILE BOTTOM SAFE AREA ──────────────────────────────── */
+  /* ── SAFE AREA (legacy fallback) ─────────────────────────── */
   @supports (padding-bottom: env(safe-area-inset-bottom)) {
-    main { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+    body.read-mode main {
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
   }
 </style>
 </head>
@@ -767,15 +861,15 @@
   </div>
   <div class="actions" id="edit-actions">
     <button class="btn btn-ghost btn-icon" onclick="openNotesPanel()" title="Daftar Catatan">☰</button>
-    <button class="btn btn-ghost" onclick="newNote()">＋</button>
-    <button class="btn btn-ghost btn-icon" onclick="promptDeleteNote()" title="Hapus Catatan" id="btn-delete" style="color:var(--danger)">🗑</button>
-    <button class="btn btn-ghost btn-icon" onclick="promptPinLock()" title="Kunci dengan PIN" id="btn-lock">🔒</button>
-    <button class="btn btn-ghost" onclick="downloadNote()" title="Unduh">↓</button>
-    <button class="btn btn-primary" onclick="openShare()">↗ Bagikan</button>
+    <button class="btn btn-ghost btn-icon btn-hide-mobile" onclick="newNote()" title="Catatan Baru">＋</button>
+    <button class="btn btn-ghost btn-icon btn-hide-mobile" onclick="promptDeleteNote()" title="Hapus Catatan" id="btn-delete" style="color:var(--danger)">🗑</button>
+    <button class="btn btn-ghost btn-icon btn-hide-mobile" onclick="promptPinLock()" title="Kunci dengan PIN" id="btn-lock">🔒</button>
+    <button class="btn btn-ghost btn-icon btn-hide-mobile" onclick="downloadNote()" title="Unduh">↓</button>
+    <button class="btn btn-primary has-icon" onclick="openShare()">↗ <span class="btn-label">Bagikan</span></button>
   </div>
   <div class="read-actions" id="read-actions">
-    <button class="btn btn-ghost" onclick="downloadNote()">↓ Unduh</button>
-    <button class="btn btn-primary" onclick="openEditMode()">✎ Edit</button>
+    <button class="btn btn-ghost" onclick="downloadNote()">↓ <span class="btn-label">Unduh</span></button>
+    <button class="btn btn-primary" onclick="openEditMode()">✎ <span class="btn-label">Edit</span></button>
   </div>
 </header>
 
@@ -901,6 +995,32 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Mobile Bottom FAB Bar (only visible on small screens in edit mode) -->
+<div class="mobile-fab" id="mobile-fab">
+  <button class="fab-btn" onclick="newNote()" title="Baru">
+    <span class="fab-icon">＋</span>
+    <span class="fab-label">Baru</span>
+  </button>
+  <div class="fab-divider"></div>
+  <button class="fab-btn" onclick="promptPinLock()" title="Kunci" id="fab-lock">
+    <span class="fab-icon">🔒</span>
+    <span class="fab-label">Kunci</span>
+  </button>
+  <button class="fab-btn fab-danger" onclick="promptDeleteNote()" title="Hapus">
+    <span class="fab-icon">🗑</span>
+    <span class="fab-label">Hapus</span>
+  </button>
+  <button class="fab-btn" onclick="downloadNote()" title="Unduh">
+    <span class="fab-icon">↓</span>
+    <span class="fab-label">Unduh</span>
+  </button>
+  <div class="fab-divider"></div>
+  <button class="fab-btn fab-primary" onclick="openShare()">
+    <span class="fab-icon">↗</span>
+    <span class="fab-label">Bagikan</span>
+  </button>
+</div>
+
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
@@ -930,7 +1050,8 @@
   const noteIdBar   = document.getElementById('note-id-bar');
   const loadingEl   = document.getElementById('loading');
   const loadingLbl  = document.getElementById('loading-label');
-  const btnLock     = document.getElementById('btn-lock');
+  const btnLock = document.getElementById('btn-lock'); const fabLock = document.getElementById('fab-lock');
+  const fabLock     = document.getElementById('fab-lock');
 
   // ── State ────────────────────────────────────────────────────
   let currentId   = null;
@@ -1195,12 +1316,12 @@
         if (isLocked) {
           editor.readOnly = true;
           titleInput.readOnly = true;
-          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; }
+          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔓'; }
           setStatus('saved', '🔒 Dikunci dengan PIN');
         } else {
           editor.readOnly = false;
           titleInput.readOnly = false;
-          if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
+          if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
         }
       }
     } catch (e) {
@@ -1324,7 +1445,7 @@
           await updateDoc(doc(db, 'notes', currentId), { pin: hash, locked: true });
           isLocked = true;
           editor.readOnly = true; titleInput.readOnly = true;
-          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; }
+          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔓'; }
           setStatus('saved', '🔒 Dikunci dengan PIN');
           showToast('Catatan dikunci dengan PIN ✓');
           closePinModal();
@@ -1340,7 +1461,7 @@
       await updateDoc(doc(db, 'notes', currentId), { pin: null, locked: false });
       isLocked = false;
       editor.readOnly = false; titleInput.readOnly = false;
-      if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
+      if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
       setStatus('saved', 'Kunci dibuka ✓');
       showToast('Kunci PIN dilepas ✓');
       closePinModal();
@@ -1441,7 +1562,7 @@
     titleInput.value = '';
     editor.readOnly = false;
     titleInput.readOnly = false;
-    if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
+    if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
     noteIdBar.textContent = 'Catatan baru';
     lastSavedEl.textContent = '—';
     updateWordCount();
