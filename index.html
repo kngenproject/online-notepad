@@ -848,6 +848,45 @@
       padding-bottom: calc(5rem + env(safe-area-inset-bottom));
     }
   }
+
+  /* ── VIEW-ONLY MODE ───────────────────────────────────────── */
+  body.read-mode.view-only header {
+    display: none;
+  }
+
+  body.read-mode.view-only main {
+    padding-top: 2rem;
+  }
+
+  @media (min-width: 640px) {
+    body.read-mode.view-only main {
+      padding-top: 4rem;
+    }
+  }
+
+  .view-only-badge {
+    display: none;
+    position: fixed;
+    bottom: 1.2rem;
+    right: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    z-index: 10;
+    box-shadow: var(--shadow);
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  body.view-only .view-only-badge {
+    display: flex;
+  }
 </style>
 </head>
 <body>
@@ -972,13 +1011,13 @@
 <div class="share-panel" id="share-panel" onclick="closeShareOutside(event)">
   <div class="share-box">
     <h2>Bagikan Catatan</h2>
-    <p>Link ini bisa dibuka siapapun dari device manapun. Penerima akan melihat tampilan baca yang bersih — tanpa editor, tanpa gangguan.</p>
+    <p>Link ini bisa dibuka siapapun dari device manapun. Penerima hanya bisa <strong>membaca</strong> — tidak bisa mengedit. Tampilan bersih tanpa editor dan gangguan.</p>
     <div class="url-row">
       <div class="url-display" id="share-url">—</div>
       <button class="btn btn-primary" onclick="copyUrl()">Salin</button>
     </div>
     <div class="share-hint">
-      ✓ Tersimpan di Firebase Firestore &nbsp;·&nbsp; Tampilan baca otomatis &nbsp;·&nbsp; Bisa diunduh
+      🔒 Read-only &nbsp;·&nbsp; Tersimpan di Firebase &nbsp;·&nbsp; Bisa diunduh
     </div>
     <div style="margin-top:1rem;display:flex;justify-content:flex-end;">
       <button class="btn" onclick="closeShare()">Tutup</button>
@@ -993,6 +1032,11 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- View-Only Badge -->
+<div class="view-only-badge" id="view-only-badge">
+  <span>👁</span> Hanya Baca
+</div>
 
 <!-- Mobile Bottom FAB Bar (only visible on small screens in edit mode) -->
 <div class="mobile-fab" id="mobile-fab">
@@ -1057,6 +1101,7 @@
   let saveTimer   = null;
   let isSaving    = false;
   let isReadMode  = false;
+  let isViewOnly  = false;   // true saat link dibuka dengan ?view=1
   let cachedTitle = '';
   let cachedBody  = '';
   let isLocked    = false;    // status kunci dari Firestore
@@ -1159,16 +1204,28 @@
   }
 
   // ── Activate Read Mode ───────────────────────────────────────
-  function activateReadMode(data, id) {
+  function activateReadMode(data, id, viewOnly) {
     isReadMode = true;
     cachedTitle = data.title || '';
     cachedBody  = data.body  || '';
 
     document.body.classList.add('read-mode');
     document.getElementById('edit-actions').style.display = 'none';
-    document.getElementById('read-actions').style.display = 'flex';
     document.getElementById('header-tag').textContent = '· baca';
     document.title = (data.title || 'Catatan') + ' — Notepad';
+
+    if (viewOnly) {
+      // View-only: sembunyikan header & tombol Edit, tampilkan badge
+      document.body.classList.add('view-only');
+      document.getElementById('read-actions').style.display = 'none';
+      // Hanya tampilkan tombol Unduh, sembunyikan tombol Edit
+      const readActions = document.getElementById('read-actions');
+      readActions.style.display = 'flex';
+      const editBtn = readActions.querySelector('button[onclick="openEditMode()"]');
+      if (editBtn) editBtn.style.display = 'none';
+    } else {
+      document.getElementById('read-actions').style.display = 'flex';
+    }
 
     // Populate read view
     document.getElementById('read-title').textContent = data.title || '(Tanpa Judul)';
@@ -1189,7 +1246,7 @@
       document.getElementById('read-meta').textContent = 'Tersimpan di Firebase';
     }
 
-    // Still populate editor in background (for edit/download)
+    // Still populate editor in background (for download)
     currentId        = id;
     titleInput.value = data.title || '';
     editor.value     = data.body  || '';
@@ -1198,6 +1255,10 @@
 
   // ── Switch to Edit Mode ──────────────────────────────────────
   window.openEditMode = function() {
+    if (isViewOnly) {
+      showToast('Link ini hanya untuk membaca.');
+      return;
+    }
     document.body.classList.remove('read-mode');
     document.getElementById('edit-actions').style.display = '';
     document.getElementById('read-actions').style.display = 'none';
@@ -1297,7 +1358,7 @@
       isLocked = data.locked === true;
 
       if (readOnly) {
-        activateReadMode(data, id);
+        activateReadMode(data, id, isViewOnly);
       } else {
         currentId         = id;
         titleInput.value  = data.title || '';
@@ -1536,7 +1597,7 @@
       await saveNote();
     }
     if (!currentId) return;
-    const url = window.location.origin + window.location.pathname + '?id=' + currentId;
+    const url = window.location.origin + window.location.pathname + '?id=' + currentId + '&view=1';
     document.getElementById('share-url').textContent = url;
     document.getElementById('share-panel').classList.add('open');
   };
@@ -1647,12 +1708,18 @@
   }
 
   // ── Init ─────────────────────────────────────────────────────
-  const params  = new URLSearchParams(window.location.search);
-  const idParam = params.get('id');
+  const params    = new URLSearchParams(window.location.search);
+  const idParam   = params.get('id');
+  const viewOnly  = params.get('view') === '1';
   const forceEdit = params.get('edit') === '1';
 
+  if (viewOnly) {
+    isViewOnly = true;
+  }
+
   if (idParam) {
-    loadNote(idParam, !forceEdit);
+    // view=1 → read-only; edit=1 → force edit; default → read-only preview
+    loadNote(idParam, viewOnly || !forceEdit);
   } else {
     setStatus('', 'Siap');
   }
