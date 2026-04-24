@@ -1,4 +1,3 @@
-<!-- index.html (PWA + PIN Lock + Delete dengan verifikasi) -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -1050,9 +1049,9 @@
   const noteIdBar   = document.getElementById('note-id-bar');
   const loadingEl   = document.getElementById('loading');
   const loadingLbl  = document.getElementById('loading-label');
-  const btnLock = document.getElementById('btn-lock'); const fabLock = document.getElementById('fab-lock');
-  const fabLock     = document.getElementById('fab-lock');
-
+  const btnLock = document.getElementById('btn-lock');
+  const fabLock = document.getElementById('fab-lock');
+  
   // ── State ────────────────────────────────────────────────────
   let currentId   = null;
   let saveTimer   = null;
@@ -1316,12 +1315,14 @@
         if (isLocked) {
           editor.readOnly = true;
           titleInput.readOnly = true;
-          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔓'; }
+          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; }
+          if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔓'; fabLock.title = 'Buka Kunci PIN'; }
           setStatus('saved', '🔒 Dikunci dengan PIN');
         } else {
           editor.readOnly = false;
           titleInput.readOnly = false;
-          if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
+          if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
+          if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
         }
       }
     } catch (e) {
@@ -1445,7 +1446,8 @@
           await updateDoc(doc(db, 'notes', currentId), { pin: hash, locked: true });
           isLocked = true;
           editor.readOnly = true; titleInput.readOnly = true;
-          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔓'; }
+          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; }
+          if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔓'; fabLock.title = 'Buka Kunci PIN'; }
           setStatus('saved', '🔒 Dikunci dengan PIN');
           showToast('Catatan dikunci dengan PIN ✓');
           closePinModal();
@@ -1461,7 +1463,8 @@
       await updateDoc(doc(db, 'notes', currentId), { pin: null, locked: false });
       isLocked = false;
       editor.readOnly = false; titleInput.readOnly = false;
-      if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
+      if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
+      if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
       setStatus('saved', 'Kunci dibuka ✓');
       showToast('Kunci PIN dilepas ✓');
       closePinModal();
@@ -1562,7 +1565,8 @@
     titleInput.value = '';
     editor.readOnly = false;
     titleInput.readOnly = false;
-    if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; } if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
+    if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
+    if (fabLock) { fabLock.querySelector('.fab-icon').textContent = '🔒'; fabLock.title = 'Kunci dengan PIN'; }
     noteIdBar.textContent = 'Catatan baru';
     lastSavedEl.textContent = '—';
     updateWordCount();
