@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notepad — Tulis & Bagikan</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --accent: #e8d5a3;
+    --accent2: #c4a882;
+    --text: #f0ebe0;
+    --muted: #666;
+    --danger: #c0392b;
+    --green: #27ae60;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.4;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 2rem; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 10;
+  }
+  .brand { display: flex; align-items: baseline; gap: 0.6rem; }
+  .brand-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--accent); letter-spacing: -0.02em; }
+  .brand-tag { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.15em; }
+  .actions { display: flex; gap: 0.6rem; align-items: center; }
+  .btn {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    padding: 0.45rem 0.9rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.08em; cursor: pointer;
+    transition: all 0.2s; border-radius: 3px; text-transform: uppercase;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #0e0e0e; font-weight: 500; }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #0e0e0e; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  main {
+    flex: 1; display: flex; flex-direction: column;
+    max-width: 860px; width: 100%; margin: 0 auto; padding: 2rem 2rem 4rem; gap: 1rem;
+  }
+  .meta-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.7rem; color: var(--muted); padding: 0.3rem 0;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--muted);
+    display: inline-block; margin-right: 0.4rem; transition: background 0.3s;
+  }
+  .status-dot.saved  { background: var(--green); }
+  .status-dot.dirty  { background: var(--accent); }
+  .status-dot.error  { background: var(--danger); }
+  .status-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  #title-input {
+    background: transparent; border: none; border-bottom: 1px solid var(--border);
+    color: var(--text); font-family: 'Playfair Display', serif; font-size: 2rem;
+    width: 100%; padding: 0.4rem 0 0.6rem; outline: none;
+    transition: border-color 0.2s; letter-spacing: -0.02em;
+  }
+  #title-input::placeholder { color: #333; }
+  #title-input:focus { border-color: var(--accent); }
+
+  #editor {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; line-height: 1.85;
+    width: 100%; min-height: 60vh; padding: 1.5rem; outline: none;
+    resize: none; border-radius: 4px; transition: border-color 0.2s; tab-size: 2;
+  }
+  #editor::placeholder { color: #2e2e2e; }
+  #editor:focus { border-color: var(--accent); }
+
+  .footer-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.68rem; color: var(--muted);
+  }
+  .toolbar { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .tool-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 0.75rem; border-radius: 3px; transition: all 0.15s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .tool-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Share Panel */
+  .share-panel {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s; backdrop-filter: blur(4px);
+  }
+  .share-panel.open { opacity: 1; pointer-events: all; }
+  .share-box {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 2rem; width: min(480px, 90vw); border-radius: 6px;
+    transform: translateY(10px); transition: transform 0.25s;
+  }
+  .share-panel.open .share-box { transform: translateY(0); }
+  .share-box h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--accent); margin-bottom: 0.4rem; }
+  .share-box p { font-size: 0.72rem; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.6; }
+  .url-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .url-display {
+    flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.6rem 0.8rem;
+    border-radius: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; user-select: all;
+  }
+  .share-hint { font-size: 0.65rem; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.5rem; }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1rem; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .loading-overlay.show { opacity: 1; pointer-events: all; }
+  .loading-spinner {
+    width: 32px; height: 32px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-label { font-size: 0.75rem; color: var(--accent); letter-spacing: 0.1em; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--accent); color: #0e0e0e;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500;
+    padding: 0.6rem 1.2rem; border-radius: 3px; opacity: 0; transition: all 0.3s;
+    pointer-events: none; z-index: 600; letter-spacing: 0.05em; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.err { background: var(--danger); color: #fff; }
+
+  @media (max-width: 600px) {
+    header { padding: 1rem; }
+    main { padding: 1rem 1rem 3rem; }
+    #title-input { font-size: 1.5rem; }
+    .brand-name { font-size: 1.1rem; }
+    .actions .btn { padding: 0.4rem 0.6rem; font-size: 0.62rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-name">Notepad</span>
+    <span class="brand-tag">online · firebase</span>
+  </div>
+  <div class="actions">
+    <button class="btn" onclick="newNote()">＋ Baru</button>
+    <button class="btn" onclick="downloadNote()">Unduh</button>
+    <button class="btn btn-primary" onclick="openShare()">↗ Bagikan</button>
+  </div>
+</header>
+
+<main>
+  <input id="title-input" type="text" placeholder="Judul catatan..." autocomplete="off" spellcheck="false">
+
+  <div class="meta-bar">
+    <div>
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Memuat Firebase...</span>
+    </div>
+    <div id="word-count">0 kata · 0 karakter</div>
+  </div>
+
+  <div class="toolbar">
+    <button class="tool-btn" onclick="insertText('**','**')" title="Bold"><b>B</b></button>
+    <button class="tool-btn" onclick="insertText('_','_')"   title="Italic" style="font-style:italic">I</button>
+    <button class="tool-btn" onclick="insertText('\`','\`')" title="Code" style="font-size:0.6rem">&lt;/&gt;</button>
+    <button class="tool-btn" onclick="insertLine('- ')"      title="List">—</button>
+    <button class="tool-btn" onclick="insertLine('> ')"      title="Quote">❝</button>
+    <button class="tool-btn" onclick="insertLine('# ')"      title="Heading">H</button>
+    <button class="tool-btn" onclick="insertSep()"           title="Separator">···</button>
+  </div>
+
+  <textarea id="editor"
+    placeholder="Tulis catatanmu di sini...&#10;&#10;Catatan otomatis tersimpan ke Firebase Firestore.&#10;Klik '↗ Bagikan' untuk dapat link pendek yang bisa langsung dibuka."
+    spellcheck="false"></textarea>
+
+  <div class="footer-bar">
+    <span id="note-id-bar">Catatan baru</span>
+    <span id="last-saved">—</span>
+  </div>
+</main>
+
+<!-- Share Panel -->
+<div class="share-panel" id="share-panel" onclick="closeShareOutside(event)">
+  <div class="share-box">
+    <h2>Bagikan Catatan</h2>
+    <p>Link ini bisa dibuka siapapun dari device manapun. Catatan tersimpan di Firebase — URL pendek dan bersih.</p>
+    <div class="url-row">
+      <div class="url-display" id="share-url">—</div>
+      <button class="btn btn-primary" onclick="copyUrl()">Salin</button>
+    </div>
+    <div class="share-hint">
+      ✓ Disimpan di Firebase Firestore &nbsp;·&nbsp; URL pendek &nbsp;·&nbsp; Realtime sync
+    </div>
+    <div style="margin-top:1rem;display:flex;justify-content:flex-end;">
+      <button class="btn" onclick="closeShare()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <span class="loading-label" id="loading-label">Memuat...</span>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp }
+                                                  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  // ── Config ───────────────────────────────────────────────────
+  const firebaseConfig = {
+    apiKey:            'AIzaSyCcKW6bolMsHMlSgzLDH_bVwelBIR3r3mY',
+    authDomain:        'online-notepad-7c23d.firebaseapp.com',
+    projectId:         'online-notepad-7c23d',
+    storageBucket:     'online-notepad-7c23d.firebasestorage.app',
+    messagingSenderId: '208989926907',
+    appId:             '1:208989926907:web:76eb1eb3db3979b05ac75e'
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // ── DOM refs ─────────────────────────────────────────────────
+  const editor      = document.getElementById('editor');
+  const titleInput  = document.getElementById('title-input');
+  const statusDot   = document.getElementById('status-dot');
+  const statusText  = document.getElementById('status-text');
+  const wordCountEl = document.getElementById('word-count');
+  const lastSavedEl = document.getElementById('last-saved');
+  const noteIdBar   = document.getElementById('note-id-bar');
+  const loadingEl   = document.getElementById('loading');
+  const loadingLbl  = document.getElementById('loading-label');
+
+  // ── State ────────────────────────────────────────────────────
+  let currentId = null;
+  let saveTimer = null;
+  let isSaving  = false;
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function genId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function setStatus(state, msg) {
+    statusText.textContent = msg || 'Siap';
+    statusDot.className = 'status-dot' + (state ? ' ' + state : '');
+  }
+
+  function updateWordCount() {
+    const text  = editor.value.trim();
+    const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+    wordCountEl.textContent = `${words} kata · ${editor.value.length} karakter`;
+  }
+
+  function showToast(msg, isErr = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' err' : '');
+    setTimeout(() => t.className = 'toast', 2800);
+  }
+
+  function showLoading(msg) {
+    loadingLbl.textContent = msg || 'Memuat...';
+    loadingEl.classList.add('show');
+  }
+
+  function hideLoading() {
+    loadingEl.classList.remove('show');
+  }
+
+  // ── Firestore ops ────────────────────────────────────────────
+  async function saveNote() {
+    if (isSaving) return;
+    const title = titleInput.value;
+    const body  = editor.value;
+    if (!title.trim() && !body.trim()) return;
+
+    isSaving = true;
+    setStatus('loading', 'Menyimpan...');
+
+    try {
+      if (!currentId) {
+        // Buat dokumen baru dengan ID acak
+        currentId = genId();
+        await setDoc(doc(db, 'notes', currentId), {
+          title,
+          body,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        noteIdBar.textContent = 'ID: ' + currentId;
+        history.replaceState(null, '', window.location.pathname + '?id=' + currentId);
+      } else {
+        await updateDoc(doc(db, 'notes', currentId), {
+          title,
+          body,
+          updatedAt: serverTimestamp()
+        });
+      }
+      const now = new Date();
+      lastSavedEl.textContent = 'Tersimpan ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setStatus('saved', 'Tersimpan di Firebase ✓');
+    } catch (e) {
+      console.error(e);
+      setStatus('error', 'Gagal menyimpan');
+      showToast('Gagal menyimpan: ' + e.message, true);
+    } finally {
+      isSaving = false;
+    }
+  }
+
+  async function loadNote(id) {
+    showLoading('Memuat catatan...');
+    setStatus('loading', 'Memuat...');
+    try {
+      const snap = await getDoc(doc(db, 'notes', id));
+      if (!snap.exists()) {
+        showToast('Catatan tidak ditemukan.', true);
+        setStatus('error', 'Tidak ditemukan');
+        return;
+      }
+      const data = snap.data();
+      currentId         = id;
+      titleInput.value  = data.title || '';
+      editor.value      = data.body  || '';
+      noteIdBar.textContent = 'ID: ' + id;
+      updateWordCount();
+
+      if (data.updatedAt) {
+        const d = data.updatedAt.toDate();
+        lastSavedEl.textContent = 'Diperbarui ' + d.toLocaleDateString('id-ID');
+      }
+      setStatus('saved', 'Dimuat dari Firebase ✓');
+      showToast('Catatan berhasil dimuat!');
+    } catch (e) {
+      console.error(e);
+      setStatus('error', 'Gagal memuat');
+      showToast('Gagal memuat: ' + e.message, true);
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // ── Input handlers ───────────────────────────────────────────
+  function onInput() {
+    setStatus('dirty', 'Ada perubahan...');
+    updateWordCount();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNote, 1200);
+  }
+
+  editor.addEventListener('input', onInput);
+  titleInput.addEventListener('input', onInput);
+
+  editor.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = editor.selectionStart, end = editor.selectionEnd;
+      editor.value = editor.value.substring(0, s) + '  ' + editor.value.substring(end);
+      editor.selectionStart = editor.selectionEnd = s + 2;
+    }
+  });
+
+  // ── Toolbar ──────────────────────────────────────────────────
+  window.insertText = function(before, after) {
+    const s = editor.selectionStart, e = editor.selectionEnd;
+    const sel = editor.value.substring(s, e);
+    editor.value = editor.value.substring(0, s) + before + (sel || 'teks') + after + editor.value.substring(e);
+    editor.selectionStart = s + before.length;
+    editor.selectionEnd   = s + before.length + (sel || 'teks').length;
+    editor.focus(); onInput();
+  };
+
+  window.insertLine = function(prefix) {
+    const s = editor.selectionStart;
+    const before = editor.value.substring(0, s);
+    const after  = editor.value.substring(s);
+    const nl = (before.length && !before.endsWith('\n')) ? '\n' : '';
+    editor.value = before + nl + prefix + after;
+    editor.selectionStart = editor.selectionEnd = s + nl.length + prefix.length;
+    editor.focus(); onInput();
+  };
+
+  window.insertSep = function() { window.insertLine('\n---\n'); };
+
+  // ── Share ────────────────────────────────────────────────────
+  window.openShare = async function() {
+    if (!currentId) {
+      if (!titleInput.value.trim() && !editor.value.trim()) {
+        showToast('Tulis sesuatu dulu sebelum dibagikan.', true); return;
+      }
+      await saveNote();
+    }
+    if (!currentId) return;
+    const url = window.location.origin + window.location.pathname + '?id=' + currentId;
+    document.getElementById('share-url').textContent = url;
+    document.getElementById('share-panel').classList.add('open');
+  };
+
+  window.closeShare = function() {
+    document.getElementById('share-panel').classList.remove('open');
+  };
+
+  window.closeShareOutside = function(e) {
+    if (e.target === document.getElementById('share-panel')) window.closeShare();
+  };
+
+  window.copyUrl = function() {
+    const url = document.getElementById('share-url').textContent;
+    navigator.clipboard.writeText(url).then(() => showToast('Link disalin ke clipboard!'));
+  };
+
+  // ── New note ─────────────────────────────────────────────────
+  window.newNote = function() {
+    if ((editor.value || titleInput.value) && currentId) {
+      if (!confirm('Buat catatan baru? Catatan ini sudah tersimpan dan bisa diakses kembali lewat link-nya.')) return;
+    }
+    currentId = null;
+    editor.value = '';
+    titleInput.value = '';
+    noteIdBar.textContent = 'Catatan baru';
+    lastSavedEl.textContent = '—';
+    updateWordCount();
+    setStatus('', 'Siap');
+    history.replaceState(null, '', window.location.pathname);
+    titleInput.focus();
+  };
+
+  // ── Download ─────────────────────────────────────────────────
+  window.downloadNote = function() {
+    const title   = titleInput.value || 'catatan';
+    const content = (titleInput.value ? `# ${titleInput.value}\n\n` : '') + editor.value;
+    const blob    = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const a       = document.createElement('a');
+    a.href        = URL.createObjectURL(blob);
+    a.download    = title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.txt';
+    a.click();
+    showToast('File diunduh!');
+  };
+
+  // ── Init ─────────────────────────────────────────────────────
+  const params = new URLSearchParams(window.location.search);
+  const idParam = params.get('id');
+  if (idParam) {
+    loadNote(idParam);
+  } else {
+    setStatus('', 'Siap');
+  }
+</script>
+</body>
+</html>
