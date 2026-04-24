@@ -1,4 +1,4 @@
-<!-- index.html (versi lengkap dengan modifikasi PWA) -->
+<!-- index.html (PWA + PIN Lock + Delete dengan verifikasi) -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -451,6 +451,125 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
+  /* ── PIN MODAL ────────────────────────────────────────────── */
+  .pin-modal {
+    position: fixed; inset: 0;
+    background: rgba(26,26,26,0.55);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 200; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+    backdrop-filter: blur(6px);
+  }
+  @media (min-width: 480px) { .pin-modal { align-items: center; } }
+  .pin-modal.open { opacity: 1; pointer-events: all; }
+
+  .pin-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 1.8rem 1.5rem 2rem;
+    width: 100%; max-width: 380px;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+    box-shadow: var(--shadow-md);
+  }
+  @media (min-width: 480px) { .pin-box { border-radius: 14px; } }
+  .pin-modal.open .pin-box { transform: translateY(0); }
+
+  .pin-box-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  .pin-box-sub {
+    font-size: 0.73rem;
+    color: var(--muted);
+    margin-bottom: 1.4rem;
+    line-height: 1.55;
+  }
+
+  .pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.6rem;
+  }
+  .pin-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--border2);
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+  .pin-dot.error  { background: var(--danger); border-color: var(--danger); animation: shake 0.35s; }
+
+  @keyframes shake {
+    0%,100%{ transform: translateX(0); }
+    20%    { transform: translateX(-5px); }
+    60%    { transform: translateX(5px); }
+  }
+
+  .pin-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+  .pin-key {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    height: 52px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pin-key:hover  { background: var(--border); }
+  .pin-key:active { transform: scale(0.95); }
+  .pin-key.del    { font-size: 1.2rem; color: var(--muted); }
+  .pin-key.confirm {
+    background: var(--accent); color: #fff;
+    border-color: var(--accent); font-size: 0.8rem;
+    font-weight: 600; letter-spacing: 0.02em;
+  }
+  .pin-key.confirm:hover { background: var(--accent2); border-color: var(--accent2); }
+
+  .pin-error-msg {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--danger);
+    margin-top: 0.8rem;
+    min-height: 1rem;
+    font-weight: 500;
+  }
+
+  /* ── NOTE ITEM ACTIONS ────────────────────────────────────── */
+  .note-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .note-item-info { flex: 1; min-width: 0; }
+  .note-item-del {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: all 0.15s;
+  }
+  .note-item:hover .note-item-del { opacity: 1; }
+  .note-item-del:hover { color: var(--danger); background: #fdecea; }
+
   /* ── SHARE PANEL ──────────────────────────────────────────── */
   .share-panel {
     position: fixed; inset: 0;
@@ -649,6 +768,8 @@
   <div class="actions" id="edit-actions">
     <button class="btn btn-ghost btn-icon" onclick="openNotesPanel()" title="Daftar Catatan">☰</button>
     <button class="btn btn-ghost" onclick="newNote()">＋</button>
+    <button class="btn btn-ghost btn-icon" onclick="promptDeleteNote()" title="Hapus Catatan" id="btn-delete" style="color:var(--danger)">🗑</button>
+    <button class="btn btn-ghost btn-icon" onclick="promptPinLock()" title="Kunci dengan PIN" id="btn-lock">🔒</button>
     <button class="btn btn-ghost" onclick="downloadNote()" title="Unduh">↓</button>
     <button class="btn btn-primary" onclick="openShare()">↗ Bagikan</button>
   </div>
@@ -707,6 +828,38 @@
   </div>
 </main>
 
+<!-- PIN Modal -->
+<div class="pin-modal" id="pin-modal">
+  <div class="pin-box">
+    <div class="pin-box-title" id="pin-title">Kunci dengan PIN</div>
+    <div class="pin-box-sub" id="pin-sub">Masukkan 4 digit PIN untuk mengunci catatan ini.</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key confirm" onclick="pinConfirm()" id="pin-confirm-btn">OK</button>
+    </div>
+    <div class="pin-error-msg" id="pin-error"></div>
+    <div style="margin-top:1rem;display:flex;justify-content:center;">
+      <button class="btn btn-ghost" onclick="closePinModal()">Batal</button>
+    </div>
+  </div>
+</div>
+
 <!-- Notes Panel (Multi-catatan) -->
 <div class="panel-overlay" id="panel-overlay" onclick="closeNotesPanel()"></div>
 <div class="notes-panel" id="notes-panel">
@@ -751,7 +904,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, getDocs, collection, orderBy, query, limit }
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, getDocs, collection, orderBy, query, limit, deleteDoc }
     from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
   // ── Config ───────────────────────────────────────────────────
@@ -1038,16 +1191,16 @@
         setStatus('saved', 'Dimuat dari Firebase ✓');
         showToast('Catatan berhasil dimuat!');
 
-        // Lock handling
+        // Lock handling with icon
         if (isLocked) {
           editor.readOnly = true;
           titleInput.readOnly = true;
-          if (btnLock) btnLock.disabled = true;
-          setStatus('saved', '🔒 Catatan dikunci (hanya baca)');
+          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; }
+          setStatus('saved', '🔒 Dikunci dengan PIN');
         } else {
           editor.readOnly = false;
           titleInput.readOnly = false;
-          if (btnLock) btnLock.disabled = false;
+          if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
         }
       }
     } catch (e) {
@@ -1061,7 +1214,7 @@
 
   // ── Input handlers ───────────────────────────────────────────
   function onInput() {
-    if (isLocked) return; // tidak perlu tandai perubahan jika terkunci
+    if (isLocked) return;
     setStatus('dirty', 'Ada perubahan...');
     updateWordCount();
     clearTimeout(saveTimer);
@@ -1104,21 +1257,149 @@
 
   window.insertSep = function() { window.insertLine('\n---\n'); };
 
-  // ── Lock Note ─────────────────────────────────────────────────
-  window.lockNote = async function() {
-    if (!currentId) { showToast('Simpan catatan terlebih dahulu sebelum dikunci.', true); return; }
-    if (isLocked) { showToast('Catatan sudah dikunci.', true); return; }
-    if (!confirm('Kunci catatan ini? Setelah dikunci, tidak dapat diedit lagi.')) return;
+  // ── PIN System ───────────────────────────────────────────────
+  let pinMode    = '';   // 'set' | 'verify-lock' | 'verify-unlock' | 'verify-delete'
+  let pinBuffer  = '';
+  let pinStep    = 0;    // 0=masukkan, 1=konfirmasi (mode set)
+  let pinTemp    = '';   // simpan sementara saat konfirmasi
+
+  function openPinModal(mode, title, sub) {
+    pinMode = mode; pinBuffer = ''; pinStep = 0; pinTemp = '';
+    document.getElementById('pin-title').textContent = title;
+    document.getElementById('pin-sub').textContent = sub;
+    document.getElementById('pin-error').textContent = '';
+    updatePinDots();
+    document.getElementById('pin-modal').classList.add('open');
+  }
+
+  window.closePinModal = function() {
+    document.getElementById('pin-modal').classList.remove('open');
+    pinBuffer = ''; pinStep = 0; pinTemp = '';
+  };
+
+  window.pinKey = function(k) {
+    if (pinBuffer.length >= 4) return;
+    pinBuffer += k;
+    updatePinDots();
+    if (pinBuffer.length === 4) setTimeout(pinConfirm, 180);
+  };
+
+  window.pinDel = function() {
+    pinBuffer = pinBuffer.slice(0, -1);
+    updatePinDots();
+    document.getElementById('pin-error').textContent = '';
+  };
+
+  function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('pd' + i).className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
+    }
+  }
+
+  function pinShakeError(msg) {
+    document.getElementById('pin-error').textContent = msg;
+    for (let i = 0; i < 4; i++) document.getElementById('pd' + i).className = 'pin-dot error';
+    setTimeout(() => { pinBuffer = ''; updatePinDots(); }, 500);
+  }
+
+  async function hashPin(pin) {
+    const buf  = new TextEncoder().encode(pin);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  window.pinConfirm = async function() {
+    if (pinBuffer.length < 4) { document.getElementById('pin-error').textContent = 'Masukkan 4 digit PIN.'; return; }
+
+    if (pinMode === 'set') {
+      if (pinStep === 0) {
+        pinTemp = pinBuffer; pinBuffer = '';
+        document.getElementById('pin-sub').textContent = 'Konfirmasi PIN Anda.';
+        updatePinDots();
+        pinStep = 1;
+      } else {
+        if (pinBuffer !== pinTemp) { pinShakeError('PIN tidak cocok, coba lagi.'); pinStep = 0; pinTemp = ''; return; }
+        const hash = await hashPin(pinBuffer);
+        try {
+          await updateDoc(doc(db, 'notes', currentId), { pin: hash, locked: true });
+          isLocked = true;
+          editor.readOnly = true; titleInput.readOnly = true;
+          if (btnLock) { btnLock.textContent = '🔓'; btnLock.title = 'Buka Kunci PIN'; }
+          setStatus('saved', '🔒 Dikunci dengan PIN');
+          showToast('Catatan dikunci dengan PIN ✓');
+          closePinModal();
+        } catch(e) { pinShakeError('Gagal menyimpan PIN.'); }
+      }
+      return;
+    }
+
+    if (pinMode === 'verify-unlock') {
+      const snap = await getDoc(doc(db, 'notes', currentId));
+      const hash = await hashPin(pinBuffer);
+      if (snap.data().pin !== hash) { pinShakeError('PIN salah.'); return; }
+      await updateDoc(doc(db, 'notes', currentId), { pin: null, locked: false });
+      isLocked = false;
+      editor.readOnly = false; titleInput.readOnly = false;
+      if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
+      setStatus('saved', 'Kunci dibuka ✓');
+      showToast('Kunci PIN dilepas ✓');
+      closePinModal();
+      return;
+    }
+
+    if (pinMode === 'verify-delete') {
+      const snap = await getDoc(doc(db, 'notes', currentId));
+      const hash = await hashPin(pinBuffer);
+      if (snap.data().pin && snap.data().pin !== hash) { pinShakeError('PIN salah.'); return; }
+      closePinModal();
+      await doDeleteNote();
+      return;
+    }
+  };
+
+  // ── Prompt PIN Lock/Unlock ────────────────────────────────────
+  window.promptPinLock = function() {
+    if (!currentId) { showToast('Simpan catatan dulu.', true); return; }
+    if (isLocked) {
+      openPinModal('verify-unlock', 'Buka Kunci PIN', 'Masukkan PIN untuk membuka kunci catatan ini.');
+    } else {
+      openPinModal('set', 'Kunci dengan PIN', 'Masukkan 4 digit PIN baru untuk catatan ini.');
+    }
+  };
+
+  // ── Delete Note ───────────────────────────────────────────────
+  window.promptDeleteNote = async function() {
+    if (!currentId) { showToast('Tidak ada catatan yang dipilih.', true); return; }
+    const snap = await getDoc(doc(db, 'notes', currentId));
+    if (!snap.exists()) { showToast('Catatan tidak ditemukan.', true); return; }
+    if (snap.data().pin) {
+      openPinModal('verify-delete', 'Hapus Catatan', 'Catatan ini terkunci. Masukkan PIN untuk menghapus.');
+    } else {
+      if (!confirm('Hapus catatan ini secara permanen?')) return;
+      await doDeleteNote();
+    }
+  };
+
+  async function doDeleteNote() {
     try {
-      await updateDoc(doc(db, 'notes', currentId), { locked: true });
-      isLocked = true;
-      editor.readOnly = true;
-      titleInput.readOnly = true;
-      if (btnLock) btnLock.disabled = true;
-      showToast('Catatan berhasil dikunci! ✓');
-      setStatus('saved', '🔒 Catatan dikunci');
-    } catch (e) {
-      showToast('Gagal mengunci: ' + e.message, true);
+      await deleteDoc(doc(db, 'notes', currentId));
+      showToast('Catatan dihapus.');
+      newNote();
+    } catch(e) { showToast('Gagal menghapus: ' + e.message, true); }
+  }
+
+  // ── Delete from Panel (helper) ───────────────────────────────
+  window.deleteFromPanel = async function(id, hasPin) {
+    const prevId = currentId;
+    currentId = id;
+    if (hasPin) {
+      closeNotesPanel();
+      openPinModal('verify-delete', 'Hapus Catatan', 'Catatan ini terkunci. Masukkan PIN untuk menghapus.');
+    } else {
+      if (!confirm('Hapus catatan ini secara permanen?')) { currentId = prevId; return; }
+      await doDeleteNote();
+      currentId = (prevId === id) ? null : prevId;
+      openNotesPanel(); // refresh list
     }
   };
 
@@ -1160,7 +1441,7 @@
     titleInput.value = '';
     editor.readOnly = false;
     titleInput.readOnly = false;
-    if (btnLock) btnLock.disabled = false;
+    if (btnLock) { btnLock.textContent = '🔒'; btnLock.title = 'Kunci dengan PIN'; }
     noteIdBar.textContent = 'Catatan baru';
     lastSavedEl.textContent = '—';
     updateWordCount();
@@ -1201,8 +1482,14 @@
         const div = document.createElement('div');
         div.className = 'note-item' + (d.id === currentId ? ' active' : '');
         const date = data.updatedAt ? data.updatedAt.toDate().toLocaleDateString('id-ID') : '—';
-        div.innerHTML = `<div class="note-item-title">${escapeHtml(data.title || '(Tanpa Judul)')}</div><div class="note-item-date">${date}${data.locked ? ' 🔒' : ''}</div>`;
-        div.onclick = () => { loadNote(d.id, false); closeNotesPanel(); };
+        div.innerHTML = `
+          <div class="note-item-info" onclick="loadNote('${d.id}', false); closeNotesPanel()">
+            <div class="note-item-title">${escapeHtml(data.title || '(Tanpa Judul)')}</div>
+            <div class="note-item-date">${date}${data.locked ? ' 🔒' : ''}</div>
+          </div>
+          <button class="note-item-del" onclick="event.stopPropagation(); deleteFromPanel('${d.id}', ${!!data.pin})" title="Hapus">🗑</button>
+        `;
+        div.onclick = null;
         list.appendChild(div);
       });
     } catch(e) {
