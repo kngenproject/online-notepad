@@ -7,15 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f5f0e8;
-    --surface: #fffdf8;
-    --border: #d8cfc0;
-    --accent: #7a5c3a;
-    --accent2: #9b7450;
-    --text: #2a2018;
-    --muted: #9a8f82;
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --accent: #e8d5a3;
+    --accent2: #c4a882;
+    --text: #f0ebe0;
+    --muted: #666;
     --danger: #c0392b;
-    --green: #2e7d52;
+    --green: #27ae60;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -44,8 +44,8 @@
     transition: all 0.2s; border-radius: 3px; text-transform: uppercase;
   }
   .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fffdf8; font-weight: 500; }
-  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fffdf8; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #0e0e0e; font-weight: 500; }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #0e0e0e; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   main {
     flex: 1; display: flex; flex-direction: column;
@@ -71,7 +71,7 @@
     width: 100%; padding: 0.4rem 0 0.6rem; outline: none;
     transition: border-color 0.2s; letter-spacing: -0.02em;
   }
-  #title-input::placeholder { color: #c0b8ac; }
+  #title-input::placeholder { color: #333; }
   #title-input:focus { border-color: var(--accent); }
 
   #editor {
@@ -80,7 +80,7 @@
     width: 100%; min-height: 60vh; padding: 1.5rem; outline: none;
     resize: none; border-radius: 4px; transition: border-color 0.2s; tab-size: 2;
   }
-  #editor::placeholder { color: #c8c0b4; }
+  #editor::placeholder { color: #2e2e2e; }
   #editor:focus { border-color: var(--accent); }
 
   .footer-bar {
@@ -136,7 +136,7 @@
     font-family: 'Lora', Georgia, serif;
     font-size: 1.05rem;
     line-height: 1.9;
-    color: #3d3028;
+    color: #ddd5c4;
     animation: fadeUp 0.6s 0.1s ease both;
   }
   body.read-mode #read-content { display: block; }
@@ -165,7 +165,7 @@
   #read-content code {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.82em;
-    background: #ede8e0;
+    background: #1e1e1e;
     border: 1px solid var(--border);
     padding: 0.15em 0.45em;
     border-radius: 3px;
@@ -287,7 +287,7 @@
   .toast {
     position: fixed; bottom: 2rem; left: 50%;
     transform: translateX(-50%) translateY(10px);
-    background: var(--accent); color: #fffdf8;
+    background: var(--accent); color: #0e0e0e;
     font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500;
     padding: 0.6rem 1.2rem; border-radius: 3px; opacity: 0; transition: all 0.3s;
     pointer-events: none; z-index: 600; letter-spacing: 0.05em; white-space: nowrap;
