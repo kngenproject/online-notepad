@@ -1,8 +1,17 @@
+<!-- index.html (versi lengkap dengan modifikasi PWA) -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- PWA additions -->
+<meta name="theme-color" content="#2d6a4f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Notepad">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <title>Notepad — Tulis & Bagikan</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1215,6 +1224,13 @@
       if (m === '<') return '&lt;';
       if (m === '>') return '&gt;';
       return m;
+    });
+  }
+
+  // ── Register Service Worker for PWA ──────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW registration failed:', err));
     });
   }
 

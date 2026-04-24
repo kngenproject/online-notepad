@@ -1,26 +1,39 @@
+// manifest.json
 {
   "name": "Notepad — Tulis & Bagikan",
   "short_name": "Notepad",
-  "description": "Tulis catatan online, simpan ke Firebase, bagikan lewat link.",
+  "description": "Tulis, simpan, dan bagikan catatan online dengan Firebase.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f5f0e8",
-  "theme_color": "#7a5c3a",
-  "orientation": "any",
+  "background_color": "#f7f6f3",
+  "theme_color": "#2d6a4f",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23f5f0e8'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle' font-family='Georgia,serif' fill='%237a5c3a'%3E✎%3C/text%3E%3C/svg%3E",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23f5f0e8'/%3E%3Ctext x='256' y='350' font-size='300' text-anchor='middle' font-family='Georgia,serif' fill='%237a5c3a'%3E✎%3C/text%3E%3C/svg%3E",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "categories": ["productivity", "utilities"],
-  "lang": "id"
+  "screenshots": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
 }
