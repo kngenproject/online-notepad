@@ -1,30 +1,18 @@
-// sw.js — Service Worker untuk Notepad PWA
-const CACHE_NAME = 'notepad-v1';
+// sw.js — Service Worker untuk Notepad PWA (tanpa error addAll)
+const CACHE_NAME = 'notepad-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/icons/icon-72.png',
-  '/icons/icon-96.png',
-  '/icons/icon-128.png',
-  '/icons/icon-144.png',
-  '/icons/icon-152.png',
-  '/icons/icon-192.png',
-  '/icons/icon-384.png',
-  '/icons/icon-512.png',
+  '/manifest.json'
 ];
 
-// ─── Install: cache static assets ───────────────────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
 
-// ─── Activate: clean old caches ─────────────────────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -38,12 +26,10 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// ─── Fetch strategy ─────────────────────────────────────────────────────────
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Lewati request ke Firebase / API eksternal → langsung ke network
   const isExternal =
     url.hostname.includes('firestore.googleapis.com') ||
     url.hostname.includes('firebase.googleapis.com') ||
@@ -53,15 +39,12 @@ self.addEventListener('fetch', event => {
     url.hostname.includes('fonts.googleapis.com');
 
   if (isExternal) {
-    // Network-first untuk Google Fonts agar tetap bisa di-cache
     if (url.hostname.includes('fonts.gstatic.com') || url.hostname.includes('fonts.googleapis.com')) {
       event.respondWith(staleWhileRevalidate(request));
     }
-    // Firebase: selalu network only
     return;
   }
 
-  // Navigasi (halaman HTML): network-first, fallback ke cache
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -75,7 +58,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Aset statis: cache-first
   event.respondWith(
     caches.match(request).then(cached => {
       if (cached) return cached;
@@ -91,7 +73,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// ─── Stale-While-Revalidate helper ──────────────────────────────────────────
 function staleWhileRevalidate(request) {
   return caches.open(CACHE_NAME).then(cache =>
     cache.match(request).then(cached => {
@@ -104,7 +85,6 @@ function staleWhileRevalidate(request) {
   );
 }
 
-// ─── Push Notifications (opsional, siap dipakai) ────────────────────────────
 self.addEventListener('push', event => {
   if (!event.data) return;
   const data = event.data.json();
