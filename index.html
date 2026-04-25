@@ -770,6 +770,14 @@
     body.view-only .view-only-badge {
       display: flex;
     }
+    /* Sembunyikan FAB mobile di mode viewer */
+    body.view-only .mobile-fab {
+      display: none !important;
+    }
+    /* Tombol unduh di read-actions untuk viewer tetap tampil */
+    body.view-only .read-actions .btn-ghost {
+      display: inline-flex;
+    }
   </style>
 </head>
 <body>
@@ -1046,22 +1054,29 @@
 
   function activateReadMode(data, id, viewOnly) {
     isReadMode = true;
+    isViewOnly = viewOnly;
     cachedTitle = data.title || '';
     cachedBody = data.body || '';
     document.body.classList.add('read-mode');
     document.getElementById('edit-actions').style.display = 'none';
     document.getElementById('header-tag').textContent = '· baca';
     document.title = (data.title || 'Catatan') + ' — Notepad';
+    
+    const readActions = document.getElementById('read-actions');
     if (viewOnly) {
       document.body.classList.add('view-only');
-      document.getElementById('read-actions').style.display = 'none';
-      const readActions = document.getElementById('read-actions');
-      readActions.style.display = 'flex';
+      // Sembunyikan tombol Edit di mode viewer
       const editBtn = readActions.querySelector('button[onclick="openEditMode()"]');
       if (editBtn) editBtn.style.display = 'none';
+      // Tampilkan tombol Unduh (tetap ada)
+      readActions.style.display = 'flex';
+      // Sembunyikan FAB mobile (sudah diatur di CSS)
     } else {
-      document.getElementById('read-actions').style.display = 'flex';
+      readActions.style.display = 'flex';
+      const editBtn = readActions.querySelector('button[onclick="openEditMode()"]');
+      if (editBtn) editBtn.style.display = 'inline-flex';
     }
+    
     document.getElementById('read-title').textContent = data.title || '(Tanpa Judul)';
     document.getElementById('read-content').innerHTML = renderMarkdown(data.body || '');
     const words = (data.body || '').trim().split(/\s+/).filter(Boolean).length;
@@ -1082,10 +1097,10 @@
 
   window.openEditMode = function() {
     if (isViewOnly) {
-      showToast('Link ini hanya untuk membaca.');
+      showToast('Link ini hanya untuk membaca.', true);
       return;
     }
-    document.body.classList.remove('read-mode');
+    document.body.classList.remove('read-mode', 'view-only');
     document.getElementById('edit-actions').style.display = '';
     document.getElementById('read-actions').style.display = 'none';
     document.getElementById('header-tag').textContent = '· firebase';
@@ -1396,7 +1411,6 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      // Pakai path relatif agar bekerja di GitHub Pages subdirectory
       const swPath = new URL('sw.js', window.location.href).pathname;
       const scope = new URL('./', window.location.href).pathname;
       navigator.serviceWorker.register(swPath, { scope })
