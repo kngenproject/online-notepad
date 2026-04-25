@@ -11,15 +11,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Notepad">
-  <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144.png">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 
   <!-- PWA: General -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="Notepad">
   <meta name="msapplication-TileColor" content="#2d6a4f">
-  <meta name="msapplication-TileImage" content="/icons/icon-144.png">
+  <meta name="msapplication-TileImage" content="icons/icon-192x192.png">
   <meta name="description" content="Tulis catatan dan bagikan dengan mudah">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -1398,8 +1396,11 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('✅ Service Worker terdaftar:', reg))
+      // Pakai path relatif agar bekerja di GitHub Pages subdirectory
+      const swPath = new URL('sw.js', window.location.href).pathname;
+      const scope = new URL('./', window.location.href).pathname;
+      navigator.serviceWorker.register(swPath, { scope })
+        .then(reg => console.log('✅ Service Worker terdaftar:', reg.scope))
         .catch(err => console.error('❌ Gagal register SW:', err));
     });
   }
