@@ -3,14 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- PWA additions -->
+<!-- PWA -->
 <meta name="theme-color" content="#2d6a4f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Notepad">
+<meta name="application-name" content="Notepad">
+<meta name="msapplication-TileColor" content="#2d6a4f">
+<meta name="msapplication-TileImage" content="/icons/icon-192.png">
+<meta name="msapplication-config" content="none">
 <link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192.png
+<link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
 <title>Notepad — Tulis & Bagikan</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1702,8 +1709,33 @@
 
   // ── Register Service Worker for PWA ──────────────────────────
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW registration failed:', err));
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+
+        // Deteksi update — reload saat SW baru aktif
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          });
+        });
+
+        // SW baru waiting → aktifkan langsung
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
+
+      } catch (err) {
+        console.warn('[PWA] SW registration failed:', err);
+      }
     });
   }
 
@@ -1712,6 +1744,7 @@
   const idParam   = params.get('id');
   const viewOnly  = params.get('view') === '1';
   const forceEdit = params.get('edit') === '1';
+  const isNewNote = params.get('new') === '1'; // dari PWA shortcut
 
   if (viewOnly) {
     isViewOnly = true;
@@ -1720,6 +1753,12 @@
   if (idParam) {
     // view=1 → read-only; edit=1 → force edit; default → read-only preview
     loadNote(idParam, viewOnly || !forceEdit);
+  } else if (isNewNote) {
+    // Dari PWA shortcut "Catatan Baru"
+    setStatus('', 'Siap');
+    titleInput.focus();
+    // Bersihkan ?new=1 dari URL tanpa reload
+    history.replaceState(null, '', window.location.pathname);
   } else {
     setStatus('', 'Siap');
   }
