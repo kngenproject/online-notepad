@@ -1,0 +1,24 @@
+{
+  "name": "Notepad — Tulis & Bagikan",
+  "short_name": "Notepad",
+  "description": "Aplikasi catatan online dengan Firebase, berbagi link, dan PIN lock.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f6f3",
+  "theme_color": "#2d6a4f",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
