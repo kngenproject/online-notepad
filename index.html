@@ -1458,8 +1458,9 @@
     confirmDeleteCallback = null;
   };
   window.confirmDeleteOk = function() {
+    const cb = confirmDeleteCallback;
     closeConfirmModal();
-    if (confirmDeleteCallback) confirmDeleteCallback();
+    if (cb) cb();
   };
 
   window.promptDeleteNote = async function() {
@@ -1484,9 +1485,6 @@
         currentId = (prevId === id) ? null : prevId;
         openNotesPanel();
       });
-      // Restore currentId in case user cancels
-      const origCallback = confirmDeleteCallback;
-      confirmDeleteCallback = async () => { await origCallback(); };
     }
   };
   window.openShare = async function() {
