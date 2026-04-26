@@ -1278,7 +1278,7 @@
     }
   }
 
-  async function loadNote(id, readOnly) {
+  window.loadNote = async function loadNote(id, readOnly) {
     showLoading('Memuat catatan...');
     if (!readOnly) setStatus('loading', 'Memuat...');
     try {
@@ -1559,9 +1559,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      const swPath = new URL('/sw.js', window.location.href).pathname;
-      const scope = new URL('./', window.location.href).pathname;
-      navigator.serviceWorker.register(swPath, { scope })
+      navigator.serviceWorker.register('./sw.js')
         .then(reg => console.log('✅ Service Worker terdaftar:', reg.scope))
         .catch(err => console.error('❌ Gagal register SW:', err));
     });
