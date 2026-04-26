@@ -156,14 +156,7 @@
       main { padding: 2.5rem 2rem 6rem; }
     }
     .meta-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.68rem;
-      color: var(--muted);
-      padding: 0.1rem 0;
-      font-weight: 500;
-      letter-spacing: 0.02em;
+      display: none;
     }
     .status-pill {
       display: inline-flex;
@@ -277,6 +270,20 @@
       border-top: 1px solid var(--border);
       font-weight: 500;
       letter-spacing: 0.02em;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .footer-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .footer-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--muted);
+      font-size: 0.63rem;
     }
     .mobile-fab {
       display: none;
@@ -732,7 +739,80 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast.err  { background: var(--danger); }
-    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    /* ── Custom Delete Confirmation Modal ── */
+    .confirm-modal {
+      position: fixed; inset: 0;
+      background: rgba(26,26,26,0.55);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 200; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+      backdrop-filter: blur(6px);
+    }
+    @media (min-width: 480px) { .confirm-modal { align-items: center; } }
+    .confirm-modal.open { opacity: 1; pointer-events: all; }
+    .confirm-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      padding: 1.6rem 1.5rem calc(1.8rem + env(safe-area-inset-bottom, 0px));
+      width: 100%; max-width: 380px;
+      transform: translateY(20px);
+      transition: transform 0.3s;
+      box-shadow: var(--shadow-md);
+    }
+    @media (min-width: 480px) { .confirm-box { border-radius: 14px; padding-bottom: 1.6rem; } }
+    .confirm-modal.open .confirm-box { transform: translateY(0); }
+    .confirm-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: #fdecea;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .confirm-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+    .confirm-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.4rem;
+    }
+    .confirm-actions {
+      display: flex;
+      gap: 0.65rem;
+      justify-content: flex-end;
+    }
+    .btn-danger {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+      font-weight: 600;
+    }
+    .btn-danger:hover { background: #a93226; border-color: #a93226; color: #fff; }
+    /* ── Note preview snippet in sidebar ── */
+    .note-item-snippet {
+      font-size: 0.6rem;
+      color: var(--muted);
+      margin-top: 0.18rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+      opacity: 0.8;
+    }
+    /* ── Auto-save subtle feedback ── */
+    @keyframes savePulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .status-pill.saving { animation: savePulse 0.8s ease 2; }
+
       body.read-mode main {
         padding-bottom: calc(5rem + env(safe-area-inset-bottom));
       }
@@ -843,28 +923,31 @@
   <div id="edit-view">
     <input id="title-input" type="text" placeholder="Judul catatan..." autocomplete="off" spellcheck="false">
     <div class="editor-divider"></div>
-    <div class="meta-bar">
-      <div class="status-pill">
-        <span class="status-dot" id="status-dot"></span>
-        <span id="status-text">Siap</span>
-      </div>
-      <div id="word-count">0 kata</div>
-    </div>
     <div class="toolbar">
       <button class="tool-btn" onclick="insertText('**','**')" title="Bold"><b>B</b></button>
       <button class="tool-btn" onclick="insertText('_','_')" title="Italic" style="font-style:italic">I</button>
-      <button class="tool-btn" onclick="insertText('\`','\`')" title="Code" style="font-size:0.65rem">&lt;/&gt;</button>
+      <button class="tool-btn" onclick="insertText('\`','\`')" title="Inline Code" style="font-family:'DM Mono',monospace;font-size:0.75rem">`&nbsp;`</button>
       <div class="tool-sep"></div>
-      <button class="tool-btn" onclick="insertLine('- ')" title="List">· List</button>
-      <button class="tool-btn" onclick="insertLine('> ')" title="Quote">❝</button>
-      <button class="tool-btn" onclick="insertLine('# ')" title="Heading">H1</button>
+      <button class="tool-btn" onclick="insertLine('- ')" title="Bullet List" style="font-size:0.78rem">≡ List</button>
+      <button class="tool-btn" onclick="insertLine('> ')" title="Blockquote" style="font-size:1rem">❝</button>
+      <button class="tool-btn" onclick="insertLine('# ')" title="Heading 1" style="font-size:0.78rem;font-weight:700">H1</button>
       <div class="tool-sep"></div>
-      <button class="tool-btn" onclick="insertSep()">— HR</button>
+      <button class="tool-btn" onclick="insertSep()" title="Horizontal Rule" style="font-size:0.78rem;letter-spacing:0.05em">— HR</button>
     </div>
     <textarea id="editor" placeholder="Mulai menulis..." spellcheck="false"></textarea>
     <div class="footer-bar">
-      <span id="note-id-bar">Catatan baru</span>
-      <span id="last-saved">—</span>
+      <div class="footer-bar-left">
+        <div class="status-pill">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Siap</span>
+        </div>
+        <span id="word-count" style="font-size:0.63rem;color:var(--muted)">0 kata</span>
+      </div>
+      <div class="footer-bar-right">
+        <span id="note-id-bar">Catatan baru</span>
+        <span>·</span>
+        <span id="last-saved">—</span>
+      </div>
     </div>
   </div>
 </main>
@@ -931,6 +1014,19 @@
   </div>
 </div>
 
+<!-- Custom Delete Confirmation Modal -->
+<div class="confirm-modal" id="confirm-modal" onclick="if(event.target===this)closeConfirmModal()">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑</div>
+    <div class="confirm-title" id="confirm-title">Hapus Catatan?</div>
+    <div class="confirm-sub" id="confirm-sub">Catatan ini akan dihapus secara permanen dan tidak bisa dipulihkan.</div>
+    <div class="confirm-actions">
+      <button class="btn" onclick="closeConfirmModal()">Batal</button>
+      <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmDeleteOk()">Hapus</button>
+    </div>
+  </div>
+</div>
+
 <div class="loading-overlay" id="loading">
   <div class="loading-spinner"></div>
   <span class="loading-label" id="loading-label">Memuat...</span>
@@ -941,27 +1037,22 @@
   <span>👁</span> Hanya Baca
 </div>
 <div class="mobile-fab" id="mobile-fab">
-  <button class="fab-btn" onclick="newNote()" title="Baru">
-    <span class="fab-icon">＋</span>
-    <span class="fab-label">Baru</span>
-  </button>
-  <div class="fab-divider"></div>
-  <button class="fab-btn" onclick="promptPinLock()" title="Kunci" id="fab-lock">
-    <span class="fab-icon">🔒</span>
-    <span class="fab-label">Kunci</span>
-  </button>
   <button class="fab-btn fab-danger" onclick="promptDeleteNote()" title="Hapus">
     <span class="fab-icon">🗑</span>
     <span class="fab-label">Hapus</span>
   </button>
+  <div class="fab-divider"></div>
+  <button class="fab-btn" onclick="newNote()" title="Baru">
+    <span class="fab-icon">＋</span>
+    <span class="fab-label">Baru</span>
+  </button>
+  <button class="fab-btn" onclick="promptPinLock()" title="Kunci" id="fab-lock">
+    <span class="fab-icon">🔒</span>
+    <span class="fab-label">Kunci</span>
+  </button>
   <button class="fab-btn" onclick="downloadNote()" title="Unduh">
     <span class="fab-icon">↓</span>
     <span class="fab-label">Unduh</span>
-  </button>
-  <div class="fab-divider"></div>
-  <button class="fab-btn fab-primary" onclick="openShare()">
-    <span class="fab-icon">↗</span>
-    <span class="fab-label">Bagikan</span>
   </button>
 </div>
 
@@ -1174,7 +1265,10 @@
       }
       const now = new Date();
       lastSavedEl.textContent = 'Tersimpan ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      setStatus('saved', 'Tersimpan di Firebase ✓');
+      setStatus('saved', 'Tersimpan ✓');
+      // Subtle pulse feedback on save
+      const pill = document.querySelector('.status-pill');
+      if (pill) { pill.classList.remove('saving'); void pill.offsetWidth; pill.classList.add('saving'); }
     } catch (e) {
       console.error(e);
       setStatus('error', 'Gagal menyimpan');
@@ -1352,12 +1446,28 @@
     if (isLocked) openPinModal('verify-unlock', 'Buka Kunci PIN', 'Masukkan PIN untuk membuka kunci catatan ini.');
     else openPinModal('set', 'Kunci dengan PIN', 'Masukkan 4 digit PIN baru untuk catatan ini.');
   };
+  let confirmDeleteCallback = null;
+  window.openConfirmModal = function(title, sub, onOk) {
+    document.getElementById('confirm-title').textContent = title || 'Hapus Catatan?';
+    document.getElementById('confirm-sub').textContent = sub || 'Catatan ini akan dihapus secara permanen.';
+    confirmDeleteCallback = onOk;
+    document.getElementById('confirm-modal').classList.add('open');
+  };
+  window.closeConfirmModal = function() {
+    document.getElementById('confirm-modal').classList.remove('open');
+    confirmDeleteCallback = null;
+  };
+  window.confirmDeleteOk = function() {
+    closeConfirmModal();
+    if (confirmDeleteCallback) confirmDeleteCallback();
+  };
+
   window.promptDeleteNote = async function() {
     if (!currentId) { showToast('Tidak ada catatan yang dipilih.', true); return; }
     const snap = await getDoc(doc(db, 'notes', currentId));
     if (!snap.exists()) { showToast('Catatan tidak ditemukan.', true); return; }
     if (snap.data().pin) openPinModal('verify-delete', 'Hapus Catatan', 'Catatan ini terkunci. Masukkan PIN untuk menghapus.');
-    else { if (!confirm('Hapus catatan ini secara permanen?')) return; await doDeleteNote(); }
+    else openConfirmModal('Hapus Catatan?', 'Catatan ini akan dihapus secara permanen dan tidak bisa dipulihkan.', doDeleteNote);
   };
   async function doDeleteNote() {
     try { await deleteDoc(doc(db, 'notes', currentId)); showToast('Catatan dihapus.'); newNote(); }
@@ -1367,7 +1477,17 @@
     const prevId = currentId;
     currentId = id;
     if (hasPin) { closeNotesPanel(); openPinModal('verify-delete', 'Hapus Catatan', 'Catatan ini terkunci. Masukkan PIN untuk menghapus.'); }
-    else { if (!confirm('Hapus catatan ini secara permanen?')) { currentId = prevId; return; } await doDeleteNote(); currentId = (prevId === id) ? null : prevId; openNotesPanel(); }
+    else {
+      closeNotesPanel();
+      openConfirmModal('Hapus Catatan?', 'Catatan ini akan dihapus secara permanen dan tidak bisa dipulihkan.', async () => {
+        await doDeleteNote();
+        currentId = (prevId === id) ? null : prevId;
+        openNotesPanel();
+      });
+      // Restore currentId in case user cancels
+      const origCallback = confirmDeleteCallback;
+      confirmDeleteCallback = async () => { await origCallback(); };
+    }
   };
   window.openShare = async function() {
     if (!currentId) {
@@ -1418,7 +1538,8 @@
         const div = document.createElement('div');
         div.className = 'note-item' + (d.id === currentId ? ' active' : '');
         const date = data.updatedAt ? data.updatedAt.toDate().toLocaleDateString('id-ID') : '—';
-        div.innerHTML = `<div class="note-item-info" onclick="loadNote('${d.id}', false); closeNotesPanel()"><div class="note-item-title">${escapeHtml(data.title || '(Tanpa Judul)')}</div><div class="note-item-date">${date}${data.locked ? ' 🔒' : ''}</div></div><button class="note-item-del" onclick="event.stopPropagation(); deleteFromPanel('${d.id}', ${!!data.pin})" title="Hapus">🗑</button>`;
+        const snippet = (data.body || '').replace(/[#\*\_\`\>\-]/g, '').trim().slice(0, 60) || '(Tidak ada isi)';
+        div.innerHTML = `<div class="note-item-info" onclick="loadNote('${d.id}', false); closeNotesPanel()"><div class="note-item-title">${escapeHtml(data.title || '(Tanpa Judul)')}${data.locked ? ' 🔒' : ''}</div><div class="note-item-snippet">${escapeHtml(snippet)}</div><div class="note-item-date">${date}</div></div><button class="note-item-del" onclick="event.stopPropagation(); deleteFromPanel('${d.id}', ${!!data.pin})" title="Hapus">🗑</button>`;
         list.appendChild(div);
       });
     } catch(e) { console.error(e); list.innerHTML = '<div style="padding:1rem;font-size:0.72rem;color:var(--muted)">Gagal memuat daftar.</div>'; }
